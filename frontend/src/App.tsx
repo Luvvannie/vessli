@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom'
 import { Button, ProductCard } from './components/ui'
 import { AuthProvider, useAuth } from './lib/auth'
@@ -32,10 +32,25 @@ const DEMO = [
   { title: 'Notion Planner System', price: '₦5,000', store: 'Vessli Creators', status: 'approved' },
   { title: 'Canva Wedding Pack', price: '₦7,500', store: 'Design Hub', status: 'pending_review' },
 ]
+void DEMO
 
 function Home() {
   const [q, setQ] = useState('')
-  const items = DEMO.filter((d) => d.title.toLowerCase().includes(q.toLowerCase()))
+  const [live, setLive] = useState<{ title: string; price: string; store?: string; status: string }[]>([])
+  useEffect(() => {
+    supabase.from('products').select('title,price_kobo,status').eq('status', 'approved').order('created_at', { ascending: false }).limit(12)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setLive(data.map((d) => ({ title: d.title, price: `₦${(d.price_kobo / 100).toLocaleString()}`, status: d.status })))
+        }
+      })
+  }, [])
+  const fallback = [
+    { title: 'Ultimate Ebook Bundle', price: '₦10,000', store: 'Annabel Studio', status: 'approved' },
+    { title: 'Notion Planner System', price: '₦5,000', store: 'Vessli Creators', status: 'approved' },
+  ]
+  const list = live.length > 0 ? live : fallback
+  const items = list.filter((d) => d.title.toLowerCase().includes(q.toLowerCase()))
   return (
     <div className="max-w-6xl mx-auto px-6">
       <div className="py-12 text-center">
