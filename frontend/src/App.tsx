@@ -6,6 +6,7 @@ import { supabase } from './lib/supabase'
 import { useBuy } from './lib/buy'
 import Admin from './pages/Admin'
 import Auth from './pages/Auth'
+import Account from './pages/Account'
 import Seller from './pages/Seller'
 
 function Nav() {
@@ -97,7 +98,7 @@ function Shell() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/product/:id" element={<div className="p-8 text-center">Product page — Phase 5</div>} />
-        <Route path="/account" element={<div className="p-8 text-center">My orders + downloads — Phase 7</div>} />
+        <Route path="/account" element={<Account />} />
         <Route path="/seller" element={<Seller />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/login" element={<Auth />} />
