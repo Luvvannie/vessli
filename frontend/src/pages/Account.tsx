@@ -43,6 +43,27 @@ export default function Account() {
     }
   }
 
+  async function download(orderId: string) {
+    setMsg('Getting secure link...')
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession()
+      if (!s) return
+      const { data: item } = await supabase.from('order_items').select('product_id').eq('order_id', orderId).limit(1).single()
+      if (!item) { setMsg('No product on this order.'); return }
+      const base = import.meta.env.VITE_SUPABASE_URL as string
+      const res = await fetch(`${base}/functions/v1/get-download-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${s.access_token}` },
+        body: JSON.stringify({ product_id: item.product_id }),
+      })
+      const data = await res.json()
+      if (data.url) { window.location.href = data.url; setMsg('Download started — link expires in 5 minutes.') }
+      else setMsg(data.reason ?? 'Download not ready yet.')
+    } catch {
+      setMsg('Download call failed — deploy get-download-link + add CORS + AWS secrets first.')
+    }
+  }
+
   if (!session) return <div className="p-8 text-center">Please <a href="/login" className="text-wine font-bold">log in</a> to see orders.</div>
 
   return (
@@ -54,11 +75,14 @@ export default function Account() {
           <div key={o.id} className="p-4 flex items-center gap-3">
             <span className="flex-1 text-sm">{o.id.slice(0, 8)} — ₦{(o.total_kobo / 100).toLocaleString()}</span>
             <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${o.status === 'paid' ? 'bg-sage-soft text-sage' : 'bg-gold-soft text-gold-dark'}`}>{o.status}</span>
+            {o.status === 'paid' && (
+              <button onClick={() => download(o.id)} className="text-xs font-bold bg-wine text-[#FAF6EE] px-3 py-1.5 rounded-full">Download</button>
+            )}
           </div>
         ))}
         {orders.length === 0 && <p className="p-4 text-sm">No orders yet — buy something from Discover.</p>}
       </div>
-      <p className="mt-3 text-xs">Downloads unlock here once the seller's file is in S3 (Phase 7).</p>
+      <p className="mt-3 text-xs">Paid orders unlock a 5-minute S3 link. Unpaid links are denied server-side.</p>
     </div>
   )
 }
