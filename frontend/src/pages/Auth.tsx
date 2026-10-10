@@ -42,9 +42,9 @@ export default function Auth() {
 
       <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-10 items-center pb-20">
         <div>
-          <p className="text-sm font-bold tracking-widest text-[#7A1E2E]/70">DIGITAL MARKETPLACE FOR CREATORS</p>
+          <p className="inline-block text-xs font-bold tracking-widest text-wine-dark bg-gold-soft border border-gold/30 px-4 py-1.5 rounded-full">✨ DIGITAL MARKETPLACE FOR CREATORS</p>
           <h1 className="mt-3 text-5xl md:text-6xl font-extrabold leading-[1.05] tracking-tight text-[#5A1421]">
-            Sell your work.<br />Keep your shine.
+            Sell your work.<br />Keep your <span className="underline decoration-gold decoration-4 underline-offset-4">shine</span>.
           </h1>
           <p className="mt-5 text-lg text-[#5C4A4E] max-w-md">
             Vessli gives creators a calm, trusted shop for ebooks, templates and guides — upload once, get paid securely.
@@ -57,17 +57,25 @@ export default function Auth() {
             </div>
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="Email address" className="w-full mb-3 rounded-xl px-4 py-3 text-slate-900 outline-none border border-[#E2D5BE] focus:border-[#7A1E2E]" />
             <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required placeholder="Password" className="w-full rounded-xl px-4 py-3 text-slate-900 outline-none border border-[#E2D5BE] focus:border-[#7A1E2E]" />
-            <button className="mt-4 w-full bg-[#7A1E2E] hover:bg-[#5A1421] text-[#FAF6EE] font-extrabold text-lg rounded-full py-4 flex items-center justify-center gap-2">
-              Continue <span>→</span>
+            <button className="mt-4 w-full bg-[#7A1E2E] hover:bg-[#5A1421] text-[#FAF6EE] font-extrabold text-lg rounded-full py-4 flex items-center justify-center gap-2 shadow-lg shadow-wine/20">
+              Continue <span className="text-gold">→</span>
             </button>
             {msg && <p className="mt-3 text-sm text-[#5C4A4E]">{msg}</p>}
+            <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-sage">
+              <span className="w-2 h-2 rounded-full bg-sage" /> Secure checkout
+              <span className="text-[#E2D5BE]">•</span>
+              <span className="w-2 h-2 rounded-full bg-gold" /> Instant download
+              <span className="text-[#E2D5BE]">•</span>
+              <span className="w-2 h-2 rounded-full bg-wine" /> 10% flat fee
+            </div>
           </form>
         </div>
 
         <div className="relative hidden lg:block h-[560px]">
-          <div className="absolute right-10 top-0 w-72 rotate-3 bg-[#7A1E2E] text-[#FAF6EE] rounded-3xl p-4 shadow-2xl">
+          <div className="absolute right-10 top-0 w-72 rotate-3 bg-[#7A1E2E] text-[#FAF6EE] rounded-3xl p-4 shadow-2xl border-t-4 border-gold">
             <p className="font-serif text-xl text-center">Creator Storefront</p>
             <div className="mt-2 h-56 rounded-2xl bg-[#5A1421] flex items-center justify-center text-6xl">📚</div>
+            <p className="mt-2 text-center text-xs font-bold text-gold">★ TRUSTED SELLERS</p>
           </div>
           <div className="absolute left-10 top-64 w-80 -rotate-2 bg-white rounded-2xl p-4 shadow-2xl border border-[#E2D5BE]">
             <p className="font-bold text-sm">Ultimate Ebook Bundle</p>
@@ -75,8 +83,9 @@ export default function Auth() {
             <div className="mt-2 flex items-center gap-2 text-sm font-bold">
               <span>₦10,000</span>
               <span className="bg-[#F1E9D9] text-[#7A1E2E] text-xs px-2 py-0.5 rounded">Bestseller</span>
+              <span className="bg-sage-soft text-sage text-xs px-2 py-0.5 rounded">Instant</span>
             </div>
-            <div className="mt-3 bg-[#7A1E2E] text-[#FAF6EE] rounded-xl py-2.5 px-4 text-sm font-semibold flex justify-between">Buy now <span>→</span></div>
+            <div className="mt-3 bg-[#7A1E2E] text-[#FAF6EE] rounded-xl py-2.5 px-4 text-sm font-semibold flex justify-between">Buy now <span className="text-gold">→</span></div>
           </div>
           <div className="absolute left-16 top-[430px] w-72 bg-white rounded-2xl p-3 shadow-xl text-sm font-semibold border border-[#E2D5BE]">📅 Planner Template — ₦5,000</div>
           <div className="absolute left-20 top-[500px] w-72 bg-white rounded-2xl p-3 shadow-xl text-sm font-semibold border border-[#E2D5BE]">📕 Design Guide — ₦7,500</div>

@@ -6,9 +6,9 @@ import Auth from './pages/Auth'
 
 function Nav() {
   return (
-    <nav className="bg-white/90 backdrop-blur border-b border-stone-100 px-6 py-4 flex items-center gap-6 sticky top-0 z-10">
-      <Link to="/" className="font-extrabold text-xl tracking-tight">Vessli<span className="text-accent">.</span></Link>
-      <div className="hidden sm:flex gap-5 text-sm font-medium text-ink-700">
+    <nav className="bg-[#FAF6EE]/90 backdrop-blur border-b border-[#E2D5BE] px-6 py-4 flex items-center gap-6 sticky top-0 z-10">
+      <Link to="/" className="flex items-center gap-2 font-extrabold text-xl tracking-tight text-wine-dark"> <span className="w-8 h-8 rounded-lg bg-wine text-[#FAF6EE] flex items-center justify-center">V</span>Vessli<span className="text-gold">.</span></Link>
+      <div className="hidden sm:flex gap-5 text-sm font-medium text-[#5C4A4E]">
         <Link to="/">Discover</Link>
         <Link to="/account">Orders</Link>
         <Link to="/seller">Sell</Link>
@@ -31,10 +31,11 @@ function Home() {
   return (
     <div className="max-w-6xl mx-auto px-6">
       <div className="py-12 text-center">
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight">Discover digital products<br />worth paying for.</h1>
-        <p className="text-ink-500 mt-3">Ebooks, templates, planners, design assets — from trusted creators.</p>
+        <p className="inline-block text-xs font-bold tracking-widest text-wine bg-wine-soft px-4 py-1.5 rounded-full">✨ NEW — CREATORS KEEP MORE WITH 10% FLAT FEE</p>
+        <h1 className="mt-4 text-4xl sm:text-5xl font-extrabold tracking-tight text-[#2A1A1E]">Discover digital products<br />worth <span className="text-wine underline decoration-gold decoration-4 underline-offset-4">paying for</span>.</h1>
+        <p className="text-[#5C4A4E] mt-3">Ebooks, templates, planners, design assets — from trusted creators.</p>
         <div className="mt-6 max-w-md mx-auto flex gap-2">
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search ebooks, planners..." className="flex-1 border border-stone-200 rounded-full px-5 py-3 outline-none focus:border-accent" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search ebooks, planners..." className="flex-1 border border-[#E2D5BE] bg-white rounded-full px-5 py-3 outline-none focus:border-wine" />
           <Button>Search</Button>
         </div>
       </div>
@@ -67,7 +68,7 @@ function Shell() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/login" element={<Auth />} />
       </Routes>
-      <footer className="text-center text-sm text-ink-500 py-8">Vessli © 2026 — 10% commission, secure Paystack checkout</footer>
+      <footer className="text-center text-sm text-[#8A767A] py-8">Vessli <span className="text-gold-dark">©</span> 2026 — <span className="text-wine font-semibold">10% commission</span>, secure Paystack checkout</footer>
     </div>
   )
 }
