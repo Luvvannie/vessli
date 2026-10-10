@@ -3,6 +3,7 @@ import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-do
 import { Button, ProductCard } from './components/ui'
 import { AuthProvider, useAuth } from './lib/auth'
 import { supabase } from './lib/supabase'
+import { useBuy } from './lib/buy'
 import Admin from './pages/Admin'
 import Auth from './pages/Auth'
 import Seller from './pages/Seller'
@@ -36,18 +37,19 @@ void DEMO
 
 function Home() {
   const [q, setQ] = useState('')
-  const [live, setLive] = useState<{ title: string; price: string; store?: string; status: string }[]>([])
+  const [live, setLive] = useState<{ id: string; title: string; price: string; store?: string; status: string }[]>([])
+  const { buy, busy } = useBuy()
   useEffect(() => {
-    supabase.from('products').select('title,price_kobo,status').eq('status', 'approved').order('created_at', { ascending: false }).limit(12)
+    supabase.from('products').select('id,title,price_kobo,status').eq('status', 'approved').order('created_at', { ascending: false }).limit(12)
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setLive(data.map((d) => ({ title: d.title, price: `₦${(d.price_kobo / 100).toLocaleString()}`, status: d.status })))
+          setLive(data.map((d) => ({ id: d.id, title: d.title, price: `₦${(d.price_kobo / 100).toLocaleString()}`, status: d.status })))
         }
       })
   }, [])
   const fallback = [
-    { title: 'Ultimate Ebook Bundle', price: '₦10,000', store: 'Annabel Studio', status: 'approved' },
-    { title: 'Notion Planner System', price: '₦5,000', store: 'Vessli Creators', status: 'approved' },
+    { id: '', title: 'Ultimate Ebook Bundle', price: '₦10,000', store: 'Annabel Studio', status: 'approved' },
+    { id: '', title: 'Notion Planner System', price: '₦5,000', store: 'Vessli Creators', status: 'approved' },
   ]
   const list = live.length > 0 ? live : fallback
   const items = list.filter((d) => d.title.toLowerCase().includes(q.toLowerCase()))
@@ -63,7 +65,16 @@ function Home() {
         </div>
       </div>
       <div className="pb-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((p) => <ProductCard key={p.title} {...p} />)}
+        {items.map((p) => (
+          <div key={p.title}>
+            <ProductCard {...p} />
+            {p.id && (
+              <button disabled={busy} onClick={() => buy(p.id)} className="mt-2 w-full bg-wine hover:bg-wine-dark disabled:opacity-50 text-[#FAF6EE] font-bold py-2.5 rounded-full">
+                Buy now
+              </button>
+            )}
+          </div>
+        ))}
       </div>
       {items.length === 0 && <p className="text-center text-ink-500 pb-16">No products found for “{q}”.</p>}
     </div>
