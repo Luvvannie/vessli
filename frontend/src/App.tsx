@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom'
 import { Button, ProductCard } from './components/ui'
 import Admin from './pages/Admin'
+import Auth from './pages/Auth'
 
 function Nav() {
   return (
@@ -45,21 +46,36 @@ function Home() {
   )
 }
 
+function Shell() {
+  const loc = useLocation()
+  const bare = loc.pathname === '/login'
+  if (bare) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Auth />} />
+      </Routes>
+    )
+  }
+  return (
+    <div className="min-h-screen bg-sand-50">
+      <Nav />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/product/:id" element={<div className="p-8 text-center">Product page — Phase 5</div>} />
+        <Route path="/account" element={<div className="p-8 text-center">My orders + downloads — Phase 7</div>} />
+        <Route path="/seller" element={<div className="p-8 text-center">Seller dashboard — Phase 4</div>} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/login" element={<Auth />} />
+      </Routes>
+      <footer className="text-center text-sm text-ink-500 py-8">Vessli © 2026 — 10% commission, secure Paystack checkout</footer>
+    </div>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-sand-50">
-        <Nav />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<div className="p-8 text-center">Product page — Phase 5</div>} />
-          <Route path="/account" element={<div className="p-8 text-center">My orders + downloads — Phase 7</div>} />
-          <Route path="/seller" element={<div className="p-8 text-center">Seller dashboard — Phase 4</div>} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/login" element={<div className="p-8 text-center">Login — Phase 3</div>} />
-        </Routes>
-        <footer className="text-center text-sm text-ink-500 py-8">Vessli © 2026 — 10% commission, secure Paystack checkout</footer>
-      </div>
+      <Shell />
     </BrowserRouter>
   )
 }
