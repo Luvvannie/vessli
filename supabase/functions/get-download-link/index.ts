@@ -1,13 +1,13 @@
 // POST get-download-link { product_id } -> { url } (5-min S3 presigned)
 // Verifies paid order for this buyer before signing. Logs download_events.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { S3Client, GetObjectCommand } from 'npm:@aws-sdk/client-s3@3'
-import { getSignedUrl } from 'npm:@aws-sdk/s3-request-presigner@3'
+import { S3Client, GetObjectCommand } from 'npm:@aws-sdk/client-s3@3.637.0'
+import { getSignedUrl } from 'npm:@aws-sdk/s3-request-presigner@3.637.0'
 
 const URL = Deno.env.get('SUPABASE_URL')!
 const KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const REGION = Deno.env.get('AWS_REGION') ?? 'eu-north-1'
-const BUCKET = Deno.env.get('S3_FILES_BUCKET') ?? 'vessli-product-files'
+const REGION = (Deno.env.get('AWS_REGION') ?? 'eu-north-1').trim()
+const BUCKET = (Deno.env.get('S3_FILES_BUCKET') ?? 'vessli-product-files').trim()
 const cors = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, content-type',
@@ -35,12 +35,16 @@ Deno.serve(async (req) => {
 
   const s3 = new S3Client({
     region: REGION,
+    // Fixes SignatureDoesNotMatch: newer SDKs sign x-amz-checksum-mode=ENABLED which S3 rejects
+    requestChecksumCalculation: 'when_required',
+    responseChecksumValidation: 'when_required',
     credentials: {
-      accessKeyId: Deno.env.get('AWS_ACCESS_KEY_ID')!,
-      secretAccessKey: Deno.env.get('AWS_SECRET_ACCESS_KEY')!,
+      accessKeyId: (Deno.env.get('AWS_ACCESS_KEY_ID') ?? '').trim(),
+      secretAccessKey: (Deno.env.get('AWS_SECRET_ACCESS_KEY') ?? '').trim(),
     },
   })
-  const url = await getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: file.s3_key }), { expiresIn: 300 })
+  const Key = (file.s3_key as string).trim()
+  const url = await getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key }), { expiresIn: 300 })
   await db.from('download_events').insert({ order_id: paid.order_id, product_id, buyer_id: user.id })
   return Response.json({ url }, { headers: cors })
 })
