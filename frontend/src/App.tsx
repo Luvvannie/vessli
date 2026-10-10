@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import { BrowserRouter, Link, Route, Routes, useLocation } from 'react-router-dom'
 import { Button, ProductCard } from './components/ui'
+import { AuthProvider, useAuth } from './lib/auth'
+import { supabase } from './lib/supabase'
 import Admin from './pages/Admin'
 import Auth from './pages/Auth'
 
 function Nav() {
+  const { session } = useAuth()
   return (
     <nav className="bg-[#FAF6EE]/90 backdrop-blur border-b border-[#E2D5BE] px-6 py-4 flex items-center gap-6 sticky top-0 z-10">
       <Link to="/" className="flex items-center gap-2 font-extrabold text-xl tracking-tight text-wine-dark"> <span className="w-8 h-8 rounded-lg bg-wine text-[#FAF6EE] flex items-center justify-center">V</span>Vessli<span className="text-gold">.</span></Link>
@@ -14,7 +17,11 @@ function Nav() {
         <Link to="/seller">Sell</Link>
         <Link to="/admin">Admin</Link>
       </div>
-      <Link to="/login" className="ml-auto"><Button>Login</Button></Link>
+      {session ? (
+        <button onClick={() => supabase.auth.signOut()} className="ml-auto text-sm font-semibold text-wine">Log out</button>
+      ) : (
+        <Link to="/login" className="ml-auto"><Button>Login</Button></Link>
+      )}
     </nav>
   )
 }
@@ -76,7 +83,9 @@ function Shell() {
 export default function App() {
   return (
     <BrowserRouter>
-      <Shell />
+      <AuthProvider>
+        <Shell />
+      </AuthProvider>
     </BrowserRouter>
   )
 }
