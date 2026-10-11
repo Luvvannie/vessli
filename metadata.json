@@ -1,0 +1,8 @@
+{
+  "name": "Vessli",
+  "description": "Digital marketplace for creators to sell ebooks, templates, planners, and design assets with secure checkout.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
