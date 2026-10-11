@@ -41,3 +41,11 @@ jobs:
           test -f dist/manifest.webmanifest || test -f dist/manifest.json
           test -f dist/index.html
           echo "PWA build files found."
+
+      - name: Upload PWA build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vessli-pwa-build
+          path: frontend/dist/
+          if-no-files-found: error
+          retention-days: 3
