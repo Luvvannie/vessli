@@ -1,0 +1,51 @@
+name: Vessli PWA Build Test
+
+on:
+  push:
+    branches:
+      - app-installation
+    paths:
+      - "frontend/**"
+      - ".github/workflows/pwa-build-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Build frontend and PWA
+        working-directory: frontend
+        run: npm run build
+
+      - name: Verify generated PWA files
+        working-directory: frontend
+        run: |
+          test -f dist/manifest.webmanifest || test -f dist/manifest.json
+          test -f dist/index.html
+          echo "PWA build files found."
+
+      - name: Upload PWA build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vessli-pwa-build
+          path: frontend/dist/
+          if-no-files-found: error
+          retention-days: 3
