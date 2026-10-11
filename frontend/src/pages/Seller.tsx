@@ -34,7 +34,7 @@ const CATEGORIES = ['Ebooks', 'Templates', 'Planners', 'Design', 'Business Resou
 
 export default function SellerPage() {
   const { session, loading: authLoading } = useAuth()
-  const { currentRole, setRole, hasSellerProfile, sellerProfile } = useRole()
+  const { hasSellerProfile, sellerProfile } = useRole()
   const token = session?.access_token ?? ''
   const coverInputId = useId()
   const fileInputId = useId()
@@ -148,26 +148,6 @@ export default function SellerPage() {
     }
   }
 
-  async function createSeller(e: React.FormEvent) {
-    e.preventDefault()
-    if (!session) return
-    setMsg({ type: 'info', text: 'Creating creator store...' })
-
-    const { data, error } = await supabase
-      .from('seller_profiles')
-      .insert({ user_id: session.user.id, store_name: storeName, bio: storeBio })
-      .select('id, store_name, bio')
-      .single()
-
-    if (error) {
-      setMsg({ type: 'error', text: error.message })
-      return
-    }
-    setSeller(data)
-    setRole('seller')
-    setMsg({ type: 'success', text: `Store "${data.store_name}" created successfully! Creator mode activated.` })
-  }
-
   async function updateSellerProfile(e: React.FormEvent) {
     e.preventDefault()
     if (!seller) return
@@ -249,7 +229,7 @@ export default function SellerPage() {
         if (error) throw error
 
         if (prodFile && newProd) {
-          setMsg({ type: 'info', text: 'Uploading digital file to secure S3 storage...' })
+          setMsg({ type: 'info', text: 'Uploading digital file to secure storage...' })
           const uploaded = await uploadProductFile(prodFile, seller.id, token)
           await supabase.from('product_files').insert({
             product_id: newProd.id,
@@ -286,95 +266,47 @@ export default function SellerPage() {
     return (
       <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-[#E2D5BE] text-center shadow-xs">
         <span className="text-4xl block mb-2" aria-hidden="true">🏪</span>
-        <h2 className="text-2xl font-black text-[#1C1618] mt-1">Creator Studio</h2>
+        <h2 className="text-2xl font-black text-[#1C1618] mt-1">Creator Studio Sign In Required</h2>
         <p className="text-xs text-[#5C4A4E] mt-2 leading-relaxed">
-          Sign in or create an account to start selling digital resources on Vessli.
+          The Creator Studio is reserved for registered digital sellers. Please sign in or register with a Creator account.
         </p>
-        <Link to="/login" className="inline-block mt-6">
-          <Button variant="primary">Log in to Continue</Button>
-        </Link>
+        <div className="mt-6 flex flex-col gap-2">
+          <Link to="/login?portal=creator">
+            <Button variant="primary" className="w-full text-xs">Sign In as Creator</Button>
+          </Link>
+          <Link to="/">
+            <Button variant="secondary" className="w-full text-xs">Return to Catalog</Button>
+          </Link>
+        </div>
       </div>
     )
   }
 
-  // Strict role check: General buyers should NOT see the seller internal dashboard
-  if (currentRole === 'buyer' && !hasSellerProfile) {
+  // Strict role separation: On no account should a buyer be able to access creator's dashboard
+  if (!hasSellerProfile) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <div className="text-center mb-10">
-          <span className="inline-block text-xs font-bold text-[#4A0E17] bg-[#FAF2E8] border border-[#E2D5BE] px-4 py-1.5 rounded-full mb-3">
-            ✨ CREATOR INVITATION
-          </span>
-          <h1 className="text-4xl font-black text-[#1C1618] tracking-tight">
-            Turn your digital knowledge into recurring income.
-          </h1>
-          <p className="text-sm text-[#5C4A4E] mt-3 max-w-xl mx-auto leading-relaxed">
-            Sell Notion systems, ebooks, Canva kits, and investor pitch decks. Creators keep 90% of every transaction with instant Paystack checkout.
-          </p>
-        </div>
+      <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-rose-200 text-center shadow-xs">
+        <span className="text-4xl block mb-2" aria-hidden="true">🚫</span>
+        <h2 className="text-2xl font-black text-rose-900 mt-1">Creator Studio Access Restricted</h2>
+        <p className="text-xs text-[#5C4A4E] mt-3 leading-relaxed">
+          You are currently signed in as a Buyer (<strong className="text-[#1C1618]">{session.user.email}</strong>). Under Vessli platform security rules, the Creator Studio, file uploads, and payout ledgers are strictly restricted to verified Creator accounts.
+        </p>
+        <p className="text-xs font-semibold text-[#8A767A] mt-2">
+          Buyers cannot access the Creator dashboard.
+        </p>
 
-        {/* Benefits Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-          <div className="p-5 bg-white rounded-2xl border border-[#E2D5BE] shadow-xs">
-            <span className="text-2xl block mb-2">💰</span>
-            <h3 className="font-bold text-sm text-[#1C1618]">10% Flat Fee</h3>
-            <p className="text-xs text-[#8A767A] mt-1">
-              You keep 90% net revenue. No hidden setup costs, monthly subscriptions, or payout delays.
-            </p>
-          </div>
-          <div className="p-5 bg-white rounded-2xl border border-[#E2D5BE] shadow-xs">
-            <span className="text-2xl block mb-2">🔒</span>
-            <h3 className="font-bold text-sm text-[#1C1618]">Tamper-Proof S3</h3>
-            <p className="text-xs text-[#8A767A] mt-1">
-              Files are stored privately in AWS S3 and delivered via 5-minute signed links only after payment.
-            </p>
-          </div>
-          <div className="p-5 bg-white rounded-2xl border border-[#E2D5BE] shadow-xs">
-            <span className="text-2xl block mb-2">⚡</span>
-            <h3 className="font-bold text-sm text-[#1C1618]">Fast 24-hr Approval</h3>
-            <p className="text-xs text-[#8A767A] mt-1">
-              Submit your listing and files. Our editorial team reviews within 24 hours so you can start selling fast.
-            </p>
-          </div>
-        </div>
-
-        {/* Onboarding Form */}
-        <form onSubmit={createSeller} className="bg-white rounded-3xl border border-[#E2D5BE] p-8 shadow-xs space-y-4 max-w-lg mx-auto">
-          <div className="text-center pb-4 border-b border-[#E2D5BE]">
-            <h2 className="text-xl font-black text-[#1C1618]">Open Your Creator Store</h2>
-            <p className="text-xs text-[#5C4A4E] mt-1">
-              Choose your store brand and start uploading your listings.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-[#5C4A4E] mb-1">Store Name *</label>
-            <input
-              value={storeName}
-              onChange={(e) => setStoreName(e.target.value)}
-              required
-              placeholder="e.g. Annabel Studio, Design Hub"
-              className="w-full border border-[#E2D5BE] rounded-xl px-4 py-2.5 outline-none focus:border-[#4A0E17] text-sm text-[#1C1618]"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-[#5C4A4E] mb-1">Store Bio (Optional)</label>
-            <textarea
-              value={storeBio}
-              onChange={(e) => setStoreBio(e.target.value)}
-              rows={3}
-              placeholder="Tell buyers what kind of digital templates or guides you create..."
-              className="w-full border border-[#E2D5BE] rounded-xl p-3 outline-none focus:border-[#4A0E17] text-sm text-[#1C1618]"
-            />
-          </div>
-
-          <div className="pt-2">
-            <Button variant="primary" type="submit" className="w-full py-3 font-bold text-sm">
-              Launch My Storefront & Enter Creator Studio
+        <div className="mt-6 flex flex-col gap-2">
+          <Link to="/login?portal=creator">
+            <Button variant="primary" className="w-full text-xs">
+              Sign In or Register as Creator
             </Button>
-          </div>
-        </form>
+          </Link>
+          <Link to="/">
+            <Button variant="secondary" className="w-full text-xs">
+              Return to Catalog
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }
@@ -411,12 +343,12 @@ export default function SellerPage() {
           >
             {isFormOpen ? 'Cancel' : '+ New Product'}
           </Button>
-          <button
-            onClick={() => setRole('buyer')}
+          <Link
+            to="/"
             className="text-xs font-bold text-[#5C4A4E] hover:text-[#4A0E17] border border-[#E2D5BE] bg-white rounded-full px-3 py-2 cursor-pointer"
           >
-            Buyer View →
-          </button>
+            View Marketplace →
+          </Link>
         </div>
       </div>
 
@@ -582,7 +514,7 @@ export default function SellerPage() {
                     Downloadable File (PDF, ZIP, EPUB, etc.)
                   </label>
                   <p className="text-[11px] text-[#8A767A] mb-3">
-                    Private file in AWS S3. Unlocks only after verified Paystack payment.
+                    Encrypted file storage. Unlocks automatically once customer payment is verified.
                   </p>
                   <input
                     id={fileInputId}
@@ -599,7 +531,7 @@ export default function SellerPage() {
 
               <div className="flex gap-3 pt-3">
                 <Button variant="primary" type="submit" disabled={uploading} className="font-bold">
-                  {uploading ? 'Uploading to S3...' : editingId ? 'Update & Resubmit' : 'Submit for Review'}
+                  {uploading ? 'Uploading File...' : editingId ? 'Update & Resubmit' : 'Submit for Review'}
                 </Button>
                 <Button variant="secondary" onClick={resetForm} disabled={uploading}>
                   Cancel

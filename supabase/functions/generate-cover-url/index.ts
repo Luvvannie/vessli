@@ -3,7 +3,7 @@
 import { S3Client, PutObjectCommand } from 'npm:@aws-sdk/client-s3@3.637.0'
 import { getSignedUrl } from 'npm:@aws-sdk/s3-request-presigner@3.637.0'
 
-const REGION = Deno.env.get('AWS_REGION') ?? 'eu-north-1'
+const REGION = (Deno.env.get('S3_REGION') ?? Deno.env.get('AWS_REGION') ?? 'eu-north-1').trim()
 const BUCKET = Deno.env.get('S3_COVERS_BUCKET') ?? 'vessli-covers'
 const cors = {
   'Access-Control-Allow-Origin': '*',

@@ -6,7 +6,7 @@ import { getSignedUrl } from 'npm:@aws-sdk/s3-request-presigner@3.637.0'
 
 const URL = Deno.env.get('SUPABASE_URL')!
 const KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const REGION = (Deno.env.get('AWS_REGION') ?? 'eu-north-1').trim()
+const REGION = (Deno.env.get('S3_REGION') ?? Deno.env.get('AWS_REGION') ?? 'eu-north-1').trim()
 const BUCKET = (Deno.env.get('S3_FILES_BUCKET') ?? 'vessli-product-files').trim()
 const cors = {
   'Access-Control-Allow-Origin': '*',

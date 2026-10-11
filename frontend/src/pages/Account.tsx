@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
+import { useRole } from '../lib/roles'
 import { Button, StatusBadge, NoticeBanner } from '../components/ui'
 import { requestDownloadLink, coverUrl } from '../lib/s3'
 import { FALLBACK_PRODUCTS } from '../lib/products'
@@ -25,6 +26,8 @@ type Order = {
 
 export default function Account() {
   const { session, loading } = useAuth()
+  const { hasBuyerProfile, hasSellerProfile, sellerProfile, activateBuyerProfile } = useRole()
+  const [activatingBuyer, setActivatingBuyer] = useState(false)
   const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders')
   const [orders, setOrders] = useState<Order[]>([])
   const [msg, setMsg] = useState<{ type: 'info' | 'success' | 'warning' | 'error'; text: string } | null>(null)
@@ -191,7 +194,7 @@ export default function Account() {
 
   async function handleDownload(orderId: string, productId: string) {
     setDownloadingId(orderId)
-    setMsg({ type: 'info', text: 'Generating tamper-proof 5-minute S3 download link...' })
+    setMsg({ type: 'info', text: 'Generating secure 5-minute download link...' })
 
     try {
       const token = session?.access_token || ''
@@ -250,17 +253,59 @@ export default function Account() {
     return <div className="max-w-4xl mx-auto p-12 text-center text-[#8A767A]">Loading orders...</div>
   }
 
+  // Not signed in
   if (!session) {
     return (
       <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-[#E2D5BE] text-center shadow-xs">
-        <span className="text-4xl">🛍️</span>
-        <h2 className="text-2xl font-bold text-wine-dark mt-3">My Orders</h2>
-        <p className="text-sm text-[#5C4A4E] mt-2">
-          Please log in to view your purchases, receipts, and downloadable files.
+        <span className="text-4xl block mb-2" aria-hidden="true">🛍️</span>
+        <h2 className="text-2xl font-bold text-[#4A0E17] mt-1">Buyer Account Sign In Required</h2>
+        <p className="text-xs text-[#5C4A4E] mt-2 leading-relaxed">
+          Please sign in to your Buyer account to access your purchased files, order history, and instant download links.
         </p>
-        <Link to="/login" className="inline-block mt-6">
-          <Button variant="primary">Log in to View Orders</Button>
-        </Link>
+        <div className="mt-6 flex flex-col gap-2">
+          <Link to="/login?portal=buyer">
+            <Button variant="primary" className="w-full text-xs">Sign In as Buyer</Button>
+          </Link>
+          <Link to="/">
+            <Button variant="secondary" className="w-full text-xs">Return to Catalog</Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Strict role separation: Creators cannot access buyer dashboard unless they also have a buyer's profile
+  if (hasSellerProfile && !hasBuyerProfile) {
+    return (
+      <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-rose-200 text-center shadow-xs">
+        <span className="text-4xl block mb-2" aria-hidden="true">🛍️</span>
+        <h2 className="text-2xl font-black text-rose-900 mt-1">Buyer Hub Access Restricted</h2>
+        <p className="text-xs text-[#5C4A4E] mt-3 leading-relaxed">
+          You are currently signed in with your Creator Studio account (<strong className="text-[#1C1618]">{sellerProfile?.store_name || session.user.email}</strong>).
+        </p>
+        <p className="text-xs text-[#5C4A4E] mt-2 leading-relaxed">
+          Under Vessli's separation rules, the Buyer Hub and order history are kept strictly segregated from Creator accounts. Creators cannot access the Buyer Hub unless a Buyer Profile is activated.
+        </p>
+
+        <div className="mt-6 flex flex-col gap-2">
+          <Button
+            variant="primary"
+            disabled={activatingBuyer}
+            onClick={async () => {
+              setActivatingBuyer(true)
+              await activateBuyerProfile()
+              setActivatingBuyer(false)
+            }}
+            className="w-full text-xs font-bold"
+          >
+            {activatingBuyer ? 'Activating Profile...' : 'Activate Buyer Profile for this Account'}
+          </Button>
+          <Link to="/seller">
+            <Button variant="secondary" className="w-full text-xs">
+              Return to Creator Studio
+            </Button>
+          </Link>
+        </div>
       </div>
     )
   }
@@ -276,7 +321,12 @@ export default function Account() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#E2D5BE]">
         <div>
-          <h1 className="text-3xl font-extrabold text-[#2A1A1E] tracking-tight">Customer Account</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-extrabold text-[#2A1A1E] tracking-tight">Buyer Hub</h1>
+            <span className="text-xs font-bold text-[#4A0E17] bg-[#FAF2E8] border border-[#E2D5BE] px-2.5 py-0.5 rounded-full">
+              Purchases & Library
+            </span>
+          </div>
           <p className="text-sm text-[#5C4A4E] mt-1">
             Signed in as <b className="text-wine-dark">{session.user.email}</b>
           </p>
@@ -326,7 +376,7 @@ export default function Account() {
             <div>
               <p className="font-bold text-sm text-[#2A1A1E]">Secure Download Link Active</p>
               <p className="text-xs text-[#5C4A4E]">
-                Signed S3 URL expires in <b className="text-wine font-mono">{formatSeconds(timeLeft)}</b> for security.
+                Download link expires in <b className="text-wine font-mono">{formatSeconds(timeLeft)}</b> for your security.
               </p>
             </div>
           </div>
@@ -443,7 +493,7 @@ export default function Account() {
           </div>
 
           <p className="text-xs text-[#8A767A] mt-4 px-2">
-            🔒 Downloads are authenticated against verified purchases. Signed S3 links expire after 5 minutes and can be re-generated at any time from this dashboard.
+            🔒 Downloads are verified against your paid orders. Secure download links are valid for 5 minutes and can be renewed at any time from your Buyer Hub.
           </p>
         </div>
       )}

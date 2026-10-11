@@ -14,6 +14,19 @@ function getGenAIClient(): GoogleGenAI | null {
   })
 }
 
+// Timeout wrapper to prevent hanging calls
+async function withTimeout<T>(promise: Promise<T>, ms = 4500): Promise<T> {
+  let timer: any
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+  })
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 // Built-in fallback catalog context to ground responses
 const DEFAULT_CATALOG = [
   {
@@ -126,10 +139,13 @@ If no specific catalog products match, do not include the tag or suggest what th
         .map((h) => `${h.role === 'user' ? 'Buyer' : 'Copilot'}: ${h.text}`)
         .join('\n')}\nBuyer: ${message}\nCopilot:`
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-      })
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+        }),
+        4500
+      )
 
       const replyText = response.text || ''
       const recommendedMatch = replyText.match(/\[RECOMMENDED_PRODUCTS:\s*([a-zA-Z0-9_,\s-]+)\]/)
@@ -208,15 +224,20 @@ Return ONLY valid JSON matching this exact structure:
 
   if (ai) {
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: `${systemInstructions}\n\nCreator product idea: "${prompt}".\nPreferred category: ${category || 'auto-detect'}\nPreferred format: ${format || 'auto-detect'}\nTarget audience: ${targetAudience || 'general creators/professionals'}\n\nOutput JSON only:`,
-      })
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: `${systemInstructions}\n\nCreator product idea: "${prompt}".\nPreferred category: ${category || 'auto-detect'}\nPreferred format: ${format || 'auto-detect'}\nTarget audience: ${targetAudience || 'general creators/professionals'}\n\nOutput JSON only:`,
+        }),
+        4500
+      )
 
       const raw = response.text || ''
       const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
       const parsed = JSON.parse(cleaned)
-      return { success: true, listing: parsed, model: 'gemini-3.8-flash' }
+      if (parsed && parsed.title && parsed.description) {
+        return { success: true, listing: parsed, model: 'gemini-3.8-flash' }
+      }
     } catch (err: any) {
       console.warn('Gemini listing generation error, using smart fallback:', err?.message)
     }
@@ -273,10 +294,13 @@ Return ONLY valid JSON matching this exact structure:
 
   if (ai) {
     try {
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: `${systemInstructions}\n\nTitle: "${title}"\nCategory: "${category}"\nFormat: "${format || 'Digital'}"\nPrice: "${price}"\nDescription: "${description}"\n\nOutput JSON only:`,
-      })
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: `${systemInstructions}\n\nTitle: "${title}"\nCategory: "${category}"\nFormat: "${format || 'Digital'}"\nPrice: "${price}"\nDescription: "${description}"\n\nOutput JSON only:`,
+        }),
+        4500
+      )
 
       const raw = response.text || ''
       const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()
@@ -336,10 +360,13 @@ Return ONLY JSON:
   "rationale": "One compelling sentence explaining why these two assets work best together."
 }`
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-      })
+      const response = await withTimeout(
+        ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: prompt,
+        }),
+        4500
+      )
 
       const raw = response.text || ''
       const cleaned = raw.replace(/```json/g, '').replace(/```/g, '').trim()

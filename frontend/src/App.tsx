@@ -16,7 +16,7 @@ import ProductDetail from './pages/ProductDetail'
 
 function Nav() {
   const { session } = useAuth()
-  const { currentRole, setRole } = useRole()
+  const { currentRole, setRole, hasSellerProfile, hasBuyerProfile } = useRole()
   const { openChat } = useAI()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -50,9 +50,9 @@ function Nav() {
               <a href="#creators" className="hover:text-[#4A0E17] transition whitespace-nowrap shrink-0">
                 Creators
               </a>
-              {session && (
-                <Link to="/account" className="hover:text-[#4A0E17] transition whitespace-nowrap shrink-0">
-                  My Orders
+              {session && hasBuyerProfile && (
+                <Link to="/account" className="hover:text-[#4A0E17] transition whitespace-nowrap shrink-0 font-medium">
+                  Buyer Hub
                 </Link>
               )}
             </>
@@ -64,24 +64,11 @@ function Nav() {
               <Link to="/seller" className="text-[#4A0E17] font-bold hover:underline transition whitespace-nowrap shrink-0">
                 Creator Studio
               </Link>
-              <Link to="/account" className="hover:text-[#4A0E17] transition whitespace-nowrap shrink-0">
-                My Purchases
-              </Link>
-            </>
-          )}
-
-          {/* Role: APP MANAGER / ADMIN */}
-          {currentRole === 'admin' && (
-            <>
-              <Link to="/admin" className="text-[#4A0E17] font-bold hover:underline transition whitespace-nowrap shrink-0">
-                Admin Panel
-              </Link>
-              <Link to="/seller" className="hover:text-[#4A0E17] transition whitespace-nowrap shrink-0">
-                Creator View
-              </Link>
-              <Link to="/account" className="hover:text-[#4A0E17] transition whitespace-nowrap shrink-0">
-                Order Ledger
-              </Link>
+              {hasBuyerProfile && (
+                <Link to="/account" className="hover:text-[#4A0E17] transition whitespace-nowrap shrink-0">
+                  Buyer Hub
+                </Link>
+              )}
             </>
           )}
         </nav>
@@ -108,7 +95,7 @@ function Nav() {
                     {userDisplayName}
                   </p>
                   <p className="text-[10px] text-[#8A767A] font-semibold mt-0.5 leading-none capitalize">
-                    {currentRole} Mode
+                    {currentRole === 'seller' ? 'Creator' : 'Buyer'}
                   </p>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-[#4A0E17] text-[#FAF6EE] flex items-center justify-center font-bold text-xs shadow-xs">
@@ -116,108 +103,79 @@ function Nav() {
                 </div>
               </button>
 
-              {/* User Dropdown with Interactive Role / Mode Switcher */}
+              {/* User Dropdown: Only Creator and Buyer Hub */}
               {menuOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-[#E2D5BE] shadow-xl py-2 z-50 text-xs animate-fade-in divide-y divide-[#E2D5BE]/60">
                     <div className="px-4 py-3">
                       <p className="font-bold text-[#1C1618] truncate">{session.user.email}</p>
-                      <p className="text-[11px] text-[#8A767A] mt-0.5">Signed in to Vessli</p>
+                      <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAF2E8] text-[#4A0E17] border border-[#E2D5BE]">
+                        {hasSellerProfile && hasBuyerProfile
+                          ? '✨ Dual: Buyer & Creator'
+                          : hasSellerProfile
+                          ? '🎨 Verified Creator'
+                          : '🛍️ Verified Buyer'}
+                      </span>
                     </div>
 
-                    {/* Role Switcher Section for Testing & Management */}
-                    <div className="px-4 py-2.5 bg-[#FAF6EE]/60">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A767A] mb-2">
-                        Active Experience Mode
-                      </p>
-                      <div className="grid grid-cols-3 gap-1 p-1 bg-white border border-[#E2D5BE] rounded-xl">
-                        <button
-                          onClick={() => {
-                            setRole('buyer')
-                            setMenuOpen(false)
-                          }}
-                          className={`py-1.5 rounded-lg text-center font-bold text-[11px] transition cursor-pointer ${
-                            currentRole === 'buyer'
-                              ? 'bg-[#4A0E17] text-white shadow-xs'
-                              : 'text-[#5C4A4E] hover:text-[#1C1618]'
-                          }`}
-                        >
-                          Buyer
-                        </button>
-                        <button
-                          onClick={() => {
-                            setRole('seller')
-                            setMenuOpen(false)
-                          }}
-                          className={`py-1.5 rounded-lg text-center font-bold text-[11px] transition cursor-pointer ${
-                            currentRole === 'seller'
-                              ? 'bg-[#4A0E17] text-white shadow-xs'
-                              : 'text-[#5C4A4E] hover:text-[#1C1618]'
-                          }`}
-                        >
-                          Creator
-                        </button>
-                        <button
-                          onClick={() => {
-                            setRole('admin')
-                            setMenuOpen(false)
-                          }}
-                          className={`py-1.5 rounded-lg text-center font-bold text-[11px] transition cursor-pointer ${
-                            currentRole === 'admin'
-                              ? 'bg-[#4A0E17] text-white shadow-xs'
-                              : 'text-[#5C4A4E] hover:text-[#1C1618]'
-                          }`}
-                        >
-                          Manager
-                        </button>
+                    {/* Mode Switcher ONLY shown if user has BOTH creator and buyer profiles */}
+                    {hasSellerProfile && hasBuyerProfile && (
+                      <div className="px-4 py-2.5 bg-[#FAF6EE]/60">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A767A] mb-2">
+                          Switch Profile View
+                        </p>
+                        <div className="flex gap-1 p-1 bg-white border border-[#E2D5BE] rounded-xl">
+                          <button
+                            onClick={() => {
+                              setRole('buyer')
+                              setMenuOpen(false)
+                            }}
+                            className={`flex-1 py-1.5 rounded-lg text-center font-bold text-[11px] transition cursor-pointer ${
+                              currentRole === 'buyer'
+                                ? 'bg-[#4A0E17] text-white shadow-xs'
+                                : 'text-[#5C4A4E] hover:text-[#1C1618]'
+                            }`}
+                          >
+                            Buyer Hub
+                          </button>
+                          <button
+                            onClick={() => {
+                              setRole('seller')
+                              setMenuOpen(false)
+                            }}
+                            className={`flex-1 py-1.5 rounded-lg text-center font-bold text-[11px] transition cursor-pointer ${
+                              currentRole === 'seller'
+                                ? 'bg-[#4A0E17] text-white shadow-xs'
+                                : 'text-[#5C4A4E] hover:text-[#1C1618]'
+                            }`}
+                          >
+                            Creator Studio
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-[#8A767A] mt-1.5 leading-snug">
-                        {currentRole === 'buyer' && 'Shopping view. Creator and admin panels are hidden.'}
-                        {currentRole === 'seller' && 'Creator studio view. Upload and manage products.'}
-                        {currentRole === 'admin' && 'App manager view. Product moderation & platform audit.'}
-                      </p>
-                    </div>
+                    )}
 
                     <div className="py-1">
-                      <Link
-                        to="/account"
-                        onClick={() => setMenuOpen(false)}
-                        className="block px-4 py-2 hover:bg-[#FAF6EE] text-[#5C4A4E] hover:text-[#1C1618] font-medium"
-                      >
-                        My Purchases & Downloads
-                      </Link>
-
-                      {currentRole === 'seller' && (
+                      {hasBuyerProfile && (
                         <Link
-                          to="/seller"
+                          to="/account"
                           onClick={() => setMenuOpen(false)}
-                          className="block px-4 py-2 hover:bg-[#FAF6EE] text-[#4A0E17] font-bold"
+                          className="flex items-center justify-between px-4 py-2 hover:bg-[#FAF6EE] text-[#5C4A4E] hover:text-[#1C1618] font-medium transition"
                         >
-                          Open Creator Studio
+                          <span className="font-semibold">Buyer Hub</span>
+                          <span className="text-[10px] text-[#8A767A]">Purchases & Library</span>
                         </Link>
                       )}
 
-                      {currentRole === 'buyer' && (
+                      {hasSellerProfile && (
                         <Link
                           to="/seller"
-                          onClick={() => {
-                            setRole('seller')
-                            setMenuOpen(false)
-                          }}
-                          className="block px-4 py-2 hover:bg-[#FAF6EE] text-[#4A0E17] font-semibold"
-                        >
-                          Sell on Vessli (10% Fee)
-                        </Link>
-                      )}
-
-                      {currentRole === 'admin' && (
-                        <Link
-                          to="/admin"
                           onClick={() => setMenuOpen(false)}
-                          className="block px-4 py-2 hover:bg-[#FAF6EE] text-[#4A0E17] font-bold"
+                          className="flex items-center justify-between px-4 py-2 hover:bg-[#FAF6EE] text-[#4A0E17] font-bold transition"
                         >
-                          App Manager Moderation
+                          <span>Creator Studio</span>
+                          <span className="text-[10px] text-[#4A0E17]/70 font-semibold">Store & Sales</span>
                         </Link>
                       )}
                     </div>
@@ -240,10 +198,10 @@ function Nav() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link to="/login" className="hidden sm:inline-block text-xs font-bold text-[#5C4A4E] hover:text-[#4A0E17] px-3 py-2 transition">
+              <Link to="/login?portal=creator" className="hidden sm:inline-block text-xs font-bold text-[#5C4A4E] hover:text-[#4A0E17] px-3 py-2 transition">
                 Creator Login
               </Link>
-              <Link to="/login">
+              <Link to="/login?portal=buyer">
                 <Button variant="primary" className="text-xs py-2 px-5">
                   Sign in
                 </Button>
@@ -440,13 +398,13 @@ function Home() {
             <span className="text-emerald-700 font-black text-sm">✓</span> 90% Creator Net
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <span className="text-emerald-700 font-black text-sm">✓</span> Signed S3 Delivery
+            <span className="text-emerald-700 font-black text-sm">✓</span> Instant Delivery
           </div>
           <div className="flex items-center justify-center gap-1.5">
             <span className="text-emerald-700 font-black text-sm">✓</span> Paystack Verified
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <span className="text-emerald-700 font-black text-sm">✓</span> Instant Download
+            <span className="text-emerald-700 font-black text-sm">✓</span> Secure Download
           </div>
         </div>
       </section>
@@ -705,7 +663,7 @@ function Home() {
           <div className="space-y-3">
             <FaqItem
               question="How do digital downloads work on Vessli?"
-              answer="As soon as your Paystack transaction is verified by our server, your order is unlocked. You will immediately receive a secure, 5-minute tamper-proof download link from our private AWS S3 storage. You can re-generate links anytime from your Orders page."
+              answer="As soon as your Paystack transaction is verified by our server, your order is unlocked. You will immediately receive a secure download link from our private cloud storage. You can re-generate links anytime from your Buyer Hub."
             />
             <FaqItem
               question="What payment methods are supported?"
@@ -827,11 +785,11 @@ function Shell() {
           </div>
           <p className="text-xs">
             Vessli <span className="text-[#D4AF37]">©</span> 2026 —{' '}
-            <span className="text-[#4A0E17] font-semibold">10% commission</span>, verified Paystack checkout & private S3 delivery.
+            <span className="text-[#4A0E17] font-semibold">10% commission</span>, verified Paystack checkout & instant secure delivery.
           </p>
           <div className="flex gap-4 text-xs font-semibold text-[#5C4A4E]">
             <Link to="/" className="hover:text-[#4A0E17]">Discover</Link>
-            <Link to="/account" className="hover:text-[#4A0E17]">My Purchases</Link>
+            <Link to="/account" className="hover:text-[#4A0E17]">Buyer Hub</Link>
           </div>
         </div>
       </footer>

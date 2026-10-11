@@ -67,6 +67,103 @@ export default defineConfig({
             return
           }
 
+          if (req.url === '/api/auth/reset-password' && req.method === 'POST') {
+            res.setHeader('Content-Type', 'application/json')
+            try {
+              const { email, password, role, fullName } = await readJsonBody()
+              const trimmed = (email || '').trim().toLowerCase()
+              if (!trimmed || !password) {
+                res.statusCode = 400
+                res.end(JSON.stringify({ error: 'Email and password are required' }))
+                return
+              }
+              const sbAdmin = createClient(SUPABASE_URL, SERVICE_KEY)
+              const { data: usersData, error: listErr } = await sbAdmin.auth.admin.listUsers({ perPage: 1000 })
+              if (listErr) throw listErr
+
+              const existingUser = usersData?.users?.find(
+                (u) => u.email?.toLowerCase() === trimmed
+              )
+
+              if (existingUser) {
+                const { data, error } = await sbAdmin.auth.admin.updateUserById(existingUser.id, {
+                  password,
+                  email_confirm: true,
+                  user_metadata: {
+                    ...existingUser.user_metadata,
+                    full_name: fullName || existingUser.user_metadata?.full_name || trimmed.split('@')[0],
+                    role: role || existingUser.user_metadata?.role || 'buyer',
+                    is_buyer: role ? role !== 'seller' : existingUser.user_metadata?.is_buyer ?? true,
+                    is_seller: role ? role === 'seller' : existingUser.user_metadata?.is_seller ?? false,
+                  },
+                })
+                if (error) throw error
+
+                // Ensure public.profiles has this record
+                await sbAdmin.from('profiles').upsert({
+                  id: existingUser.id,
+                  full_name: fullName || existingUser.user_metadata?.full_name || trimmed.split('@')[0],
+                })
+
+                res.end(JSON.stringify({ ok: true, message: 'Password updated and email verified', user: data.user }))
+              } else {
+                const isSeller = role === 'seller'
+                const { data, error } = await sbAdmin.auth.admin.createUser({
+                  email: trimmed,
+                  password,
+                  email_confirm: true,
+                  user_metadata: {
+                    full_name: fullName || trimmed.split('@')[0],
+                    role: isSeller ? 'seller' : 'buyer',
+                    is_buyer: !isSeller,
+                    is_seller: isSeller,
+                  },
+                })
+                if (error) throw error
+
+                if (data.user) {
+                  await sbAdmin.from('profiles').upsert({
+                    id: data.user.id,
+                    full_name: fullName || trimmed.split('@')[0],
+                  })
+                }
+
+                res.end(JSON.stringify({ ok: true, message: 'Account created with verified password', user: data.user }))
+              }
+            } catch (e: any) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ error: e.message || 'Password update failed' }))
+            }
+            return
+          }
+
+          if (req.url === '/api/auth/delete-user' && req.method === 'POST') {
+            res.setHeader('Content-Type', 'application/json')
+            try {
+              const { email } = await readJsonBody()
+              const trimmed = (email || '').trim().toLowerCase()
+              const sbAdmin = createClient(SUPABASE_URL, SERVICE_KEY)
+              const { data: usersData } = await sbAdmin.auth.admin.listUsers({ perPage: 1000 })
+              const target = usersData?.users?.find((u) => u.email?.toLowerCase() === trimmed)
+
+              if (target) {
+                // Delete referencing rows so foreign key constraints don't block
+                await sbAdmin.from('orders').delete().eq('buyer_id', target.id)
+                await sbAdmin.from('seller_profiles').delete().eq('user_id', target.id)
+                await sbAdmin.from('profiles').delete().eq('id', target.id)
+                const { error } = await sbAdmin.auth.admin.deleteUser(target.id)
+                if (error) throw error
+                res.end(JSON.stringify({ ok: true, message: `Account ${trimmed} successfully deleted from Supabase` }))
+              } else {
+                res.end(JSON.stringify({ ok: true, message: 'User not found in Supabase Auth' }))
+              }
+            } catch (e: any) {
+              res.statusCode = 400
+              res.end(JSON.stringify({ error: e.message || 'Account deletion failed' }))
+            }
+            return
+          }
+
           if (req.url === '/api/ai/chat' && req.method === 'POST') {
             res.setHeader('Content-Type', 'application/json')
             try {

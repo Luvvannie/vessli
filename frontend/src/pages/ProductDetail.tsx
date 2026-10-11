@@ -143,7 +143,7 @@ export default function ProductDetail() {
               </div>
               <div className="bg-[#FAF6EE] p-3 rounded-xl border border-[#E2D5BE]/60 col-span-2 sm:col-span-1">
                 <p className="text-xs text-[#8A767A]">Delivery</p>
-                <p className="font-bold text-emerald-800 mt-0.5">5-min S3 Link</p>
+                <p className="font-bold text-emerald-800 mt-0.5">Instant Access</p>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function ProductDetail() {
             <div className="flex items-center gap-1.5 text-xs text-[#8A767A] mb-3">
               <span className="font-semibold text-[#4A0E17]">{product.category}</span>
               <span aria-hidden="true">·</span>
-              <span className="text-emerald-700 font-semibold">Instant S3 Access</span>
+              <span className="text-emerald-700 font-semibold">Instant Digital Download</span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black text-[#1C1618] tracking-tight leading-snug">
@@ -215,7 +215,7 @@ export default function ProductDetail() {
                 {busy ? 'Connecting Paystack...' : `Buy now for ${product.price}`}
               </Button>
               <p className="text-[11px] text-center text-[#8A767A]">
-                Secure Paystack checkout. S3 download link generated instantly upon verification.
+                Secure Paystack checkout. Download link generated immediately upon payment confirmation.
               </p>
             </div>
 
@@ -225,7 +225,7 @@ export default function ProductDetail() {
                 <span className="text-emerald-700 font-bold text-sm">✓</span> Verified purchase
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-emerald-700 font-bold text-sm">✓</span> Direct 5-min S3 link
+                <span className="text-emerald-700 font-bold text-sm">✓</span> Instant secure download
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-emerald-700 font-bold text-sm">✓</span> Lifetime license

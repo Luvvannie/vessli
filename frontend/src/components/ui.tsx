@@ -242,7 +242,7 @@ export function ProductCard({
             <span className="font-extrabold text-lg text-[#4A0E17] tabular-nums mt-0.5 block">{price}</span>
           </div>
           <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-            Verified S3
+            Instant Access
           </span>
         </div>
       </div>
@@ -359,7 +359,7 @@ export function QuickViewModal({
                 )}
                 <div className="flex justify-between">
                   <span>Delivery:</span>
-                  <span className="font-medium text-emerald-800">Secure AWS S3 (5-min link)</span>
+                  <span className="font-medium text-emerald-800">Instant Download</span>
                 </div>
               </div>
             </div>

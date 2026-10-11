@@ -48,7 +48,7 @@ const COMMON_REJECTION_REASONS = [
 
 export default function Admin() {
   const { session, loading: authLoading } = useAuth()
-  const { currentRole, setRole, hasAdminAccess } = useRole()
+  const { hasAdminAccess } = useRole()
   const [activeTab, setActiveTab] = useState<'moderation' | 'active' | 'financials'>('moderation')
 
   const [pendingProducts, setPendingProducts] = useState<ProductItem[]>([])
@@ -86,10 +86,10 @@ export default function Admin() {
   }
 
   useEffect(() => {
-    if (currentRole !== 'admin') return
+    if (!hasAdminAccess) return
 
     loadAllData()
-  }, [currentRole, session])
+  }, [hasAdminAccess, session])
 
   async function loadAllData() {
     // 1. Load pending products
@@ -274,35 +274,51 @@ export default function Admin() {
   }
 
   if (authLoading) {
-    return <div className="max-w-4xl mx-auto p-12 text-center text-[#8A767A]">Loading admin portal...</div>
+    return <div className="max-w-4xl mx-auto p-12 text-center text-[#8A767A]">Verifying platform credentials...</div>
   }
 
-  // Strict role check: General buyers and regular creators should NOT view admin dashboard
-  if (currentRole !== 'admin') {
+  // Strict check 1: Unauthenticated visitors are blocked completely
+  if (!session) {
     return (
       <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-[#E2D5BE] text-center shadow-xs">
-        <span className="text-4xl block mb-2" aria-hidden="true">🛡️</span>
-        <h2 className="text-2xl font-black text-[#1C1618] mt-1">App Manager Access Only</h2>
+        <span className="text-4xl block mb-2" aria-hidden="true">🔒</span>
+        <h2 className="text-2xl font-black text-[#1C1618] mt-1">Platform Manager Sign In Required</h2>
         <p className="text-xs text-[#5C4A4E] mt-3 leading-relaxed">
-          The Admin Console is reserved for Vessli platform operators to review digital submissions and monitor platform financial ledger records.
+          The Manager Dashboard is a private operational console reserved exclusively for the Vessli platform administrator. Public access is strictly forbidden.
+        </p>
+
+        <div className="mt-6 flex flex-col gap-2">
+          <Link to="/login">
+            <Button variant="primary" className="w-full text-xs">
+              Sign In to Continue
+            </Button>
+          </Link>
+          <Link to="/">
+            <Button variant="secondary" className="w-full text-xs">
+              Return to Catalog
+            </Button>
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // Strict check 2: Logged in non-admins are blocked completely
+  if (!hasAdminAccess) {
+    return (
+      <div className="max-w-md mx-auto my-16 p-8 bg-white rounded-3xl border border-rose-200 text-center shadow-xs">
+        <span className="text-4xl block mb-2" aria-hidden="true">🚫</span>
+        <h2 className="text-2xl font-black text-rose-900 mt-1">403 Forbidden: Access Denied</h2>
+        <p className="text-xs text-[#5C4A4E] mt-3 leading-relaxed">
+          Your signed-in account (<strong className="text-[#1C1618]">{session.user.email}</strong>) does not have manager privileges. This backend console is restricted exclusively to the platform administrator alone.
         </p>
 
         <div className="mt-6 flex flex-col gap-2">
           <Link to="/">
-            <Button variant="secondary" className="w-full text-xs">
+            <Button variant="primary" className="w-full text-xs">
               Return to Discover
             </Button>
           </Link>
-
-          {(hasAdminAccess || session) && (
-            <Button
-              variant="primary"
-              onClick={() => setRole('admin')}
-              className="w-full text-xs"
-            >
-              Switch to App Manager Mode
-            </Button>
-          )}
         </div>
       </div>
     )
@@ -329,12 +345,12 @@ export default function Admin() {
           </p>
         </div>
 
-        <button
-          onClick={() => setRole('buyer')}
+        <Link
+          to="/"
           className="text-xs font-bold text-[#5C4A4E] hover:text-[#4A0E17] border border-[#E2D5BE] bg-white rounded-full px-4 py-2 self-start sm:self-auto cursor-pointer"
         >
-          View Store as Buyer →
-        </button>
+          View Storefront →
+        </Link>
       </div>
 
       {msg && (

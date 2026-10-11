@@ -36,7 +36,7 @@ export const FALLBACK_PRODUCTS: Product[] = [
     reviews_count: 58,
     sales_count: 242,
     badge: 'Staff Pick',
-    highlights: ['15 Detailed Ebooks & Frameworks', 'Fillable Action Worksheets', 'Lifetime Updates', 'Instant S3 Delivery'],
+    highlights: ['15 Detailed Ebooks & Frameworks', 'Fillable Action Worksheets', 'Lifetime Updates', 'Instant Digital Download'],
   },
   {
     id: 'prod-planner-2',
