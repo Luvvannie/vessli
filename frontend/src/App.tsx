@@ -737,6 +737,20 @@ function Shell() {
   const { isChatOpen, openChat, closeChat } = useAI()
   const bare = loc.pathname === '/login'
 
+  const searchParams = new URLSearchParams(loc.search)
+  const isApkParam = searchParams.get('page') === 'apk' || searchParams.get('view') === 'apk' || searchParams.get('apk') === 'true'
+
+  if (isApkParam) {
+    return (
+      <APKMobileShell>
+        <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+          <Nav />
+          <APKDownloadPage />
+        </div>
+      </APKMobileShell>
+    )
+  }
+
   if (bare) {
     return (
       <APKMobileShell>
@@ -802,7 +816,7 @@ function Shell() {
             <div className="flex gap-4 text-xs font-semibold text-[#5C4A4E]">
               <Link to="/" className="hover:text-[#4A0E17]">Discover</Link>
               <Link to="/account" className="hover:text-[#4A0E17]">Buyer Hub</Link>
-              <Link to="/apk" className="hover:text-[#4A0E17]">Mobile App</Link>
+              <Link to="/?page=apk" className="hover:text-[#4A0E17]">Mobile App (APK)</Link>
             </div>
           </div>
         </footer>
