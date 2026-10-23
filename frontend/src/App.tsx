@@ -802,6 +802,7 @@ function Shell() {
             <div className="flex gap-4 text-xs font-semibold text-[#5C4A4E]">
               <Link to="/" className="hover:text-[#4A0E17]">Discover</Link>
               <Link to="/account" className="hover:text-[#4A0E17]">Buyer Hub</Link>
+              <Link to="/apk" className="hover:text-[#4A0E17]">Mobile App</Link>
             </div>
           </div>
         </footer>
