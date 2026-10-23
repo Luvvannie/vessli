@@ -46,13 +46,16 @@ export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenSearch
         </Link>
 
         {/* 2. Search / Explore */}
-        <button
+        <Link
+          to="/"
           onClick={() => {
             if (onOpenSearch) {
               onOpenSearch()
             } else {
-              const el = document.getElementById('search-section') || document.getElementById('categories')
-              if (el) el.scrollIntoView({ behavior: 'smooth' })
+              setTimeout(() => {
+                const el = document.getElementById('search-section') || document.getElementById('categories')
+                if (el) el.scrollIntoView({ behavior: 'smooth' })
+              }, 100)
             }
           }}
           className="flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-all cursor-pointer group text-[#8A767A] hover:text-[#4A0E17]"
@@ -65,7 +68,7 @@ export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenSearch
           <span className="text-[10px] mt-0.5 font-bold tracking-tight text-[#8A767A]">
             Explore
           </span>
-        </button>
+        </Link>
 
         {/* 3. Vessli AI Advisor (Floating Center Action) */}
         <button

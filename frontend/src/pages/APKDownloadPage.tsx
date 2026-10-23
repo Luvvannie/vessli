@@ -320,6 +320,22 @@ npx cap open android`
 
             {activeTab === 'export' && (
               <div className="space-y-4">
+                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-sm text-emerald-950">Direct Android Package (.zip)</h4>
+                    <p className="text-emerald-800 text-[11px] mt-0.5">
+                      Contains preconfigured AndroidManifest.xml, Bubblewrap TWA manifest, and app launcher icons ready for production compilation.
+                    </p>
+                  </div>
+                  <a
+                    href="/vessli-android-package.zip"
+                    download="vessli-android-package.zip"
+                    className="px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-xs transition shrink-0 cursor-pointer"
+                  >
+                    <span>⬇️</span> Download Package
+                  </a>
+                </div>
+
                 <div className="p-4 bg-[#FAF6EE]/50 rounded-2xl border border-[#E2D5BE] space-y-2">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-sm text-[#1C1618]">Google Play TWA / Bubblewrap</h4>
