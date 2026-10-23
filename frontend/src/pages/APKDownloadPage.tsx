@@ -4,7 +4,7 @@ import { usePWAInstall } from '../lib/usePWAInstall'
 
 export default function APKDownloadPage() {
   const { isInstallable, isInstalled, isIOS, isAndroid, install } = usePWAInstall()
-  const [activeTab, setActiveTab] = useState<'install' | 'export' | 'qr'>('install')
+  const [activeTab, setActiveTab] = useState<'install' | 'emulator' | 'qr' | 'export'>('emulator')
   const [copiedSnippet, setCopiedSnippet] = useState<string | null>(null)
 
   const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://vessli.app'
@@ -83,10 +83,20 @@ npx cap open android`
 
         {/* Tabs */}
         <div className="bg-white rounded-3xl border border-[#E2D5BE] shadow-xs overflow-hidden">
-          <div className="flex border-b border-[#E2D5BE] bg-[#FAF6EE]/50 px-6 pt-3 gap-3">
+          <div className="flex border-b border-[#E2D5BE] bg-[#FAF6EE]/50 px-6 pt-3 gap-2 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('emulator')}
+              className={`pb-3 px-3 text-xs font-bold transition border-b-2 cursor-pointer whitespace-nowrap ${
+                activeTab === 'emulator'
+                  ? 'border-[#4A0E17] text-[#4A0E17]'
+                  : 'border-transparent text-[#8A767A] hover:text-[#1C1618]'
+              }`}
+            >
+              📱 Test Drive Simulator
+            </button>
             <button
               onClick={() => setActiveTab('install')}
-              className={`pb-3 px-3 text-xs font-bold transition border-b-2 cursor-pointer ${
+              className={`pb-3 px-3 text-xs font-bold transition border-b-2 cursor-pointer whitespace-nowrap ${
                 activeTab === 'install'
                   ? 'border-[#4A0E17] text-[#4A0E17]'
                   : 'border-transparent text-[#8A767A] hover:text-[#1C1618]'
@@ -96,27 +106,70 @@ npx cap open android`
             </button>
             <button
               onClick={() => setActiveTab('qr')}
-              className={`pb-3 px-3 text-xs font-bold transition border-b-2 cursor-pointer ${
+              className={`pb-3 px-3 text-xs font-bold transition border-b-2 cursor-pointer whitespace-nowrap ${
                 activeTab === 'qr'
                   ? 'border-[#4A0E17] text-[#4A0E17]'
                   : 'border-transparent text-[#8A767A] hover:text-[#1C1618]'
               }`}
             >
-              📱 Scan QR on Phone
+              📷 Scan QR
             </button>
             <button
               onClick={() => setActiveTab('export')}
-              className={`pb-3 px-3 text-xs font-bold transition border-b-2 cursor-pointer ${
+              className={`pb-3 px-3 text-xs font-bold transition border-b-2 cursor-pointer whitespace-nowrap ${
                 activeTab === 'export'
                   ? 'border-[#4A0E17] text-[#4A0E17]'
                   : 'border-transparent text-[#8A767A] hover:text-[#1C1618]'
               }`}
             >
-              📦 Compile Native .APK
+              📦 Compile .APK
             </button>
           </div>
 
           <div className="p-6 space-y-5 text-xs text-[#1C1618]">
+            {activeTab === 'emulator' && (
+              <div className="space-y-6">
+                <div className="bg-[#FAF2E8] p-4 rounded-2xl border border-[#D4AF37]/50 flex items-start gap-3">
+                  <span className="text-2xl">🎮</span>
+                  <div>
+                    <h3 className="font-bold text-sm text-[#4A0E17]">No Android Phone? Test Right Here!</h3>
+                    <p className="text-[#6B5A5E] text-xs mt-0.5 leading-relaxed">
+                      This interactive Google Pixel simulator runs the live Vessli APK mobile shell. You can tap through the marketplace, test the bottom dock navigation, chat with the Vessli AI shopping assistant, and test the checkout flow!
+                    </p>
+                  </div>
+                </div>
+
+                {/* Device Frame */}
+                <div className="flex flex-col items-center justify-center">
+                  <div className="relative w-[370px] h-[680px] bg-[#1C1618] rounded-[48px] p-2 shadow-2xl border-[3px] border-[#383133]">
+                    {/* Volume & Power buttons */}
+                    <div className="absolute -left-[5px] top-[120px] w-[2.5px] h-[40px] bg-[#4E4447] rounded-l-md" />
+                    <div className="absolute -left-[5px] top-[170px] w-[2.5px] h-[40px] bg-[#4E4447] rounded-l-md" />
+                    <div className="absolute -right-[5px] top-[140px] w-[2.5px] h-[48px] bg-[#4E4447] rounded-r-md" />
+
+                    {/* Phone Screen */}
+                    <div className="w-full h-full bg-[#FAF6EE] rounded-[40px] overflow-hidden flex flex-col relative shadow-inner">
+                      {/* Punch Hole Camera */}
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-30 w-3.5 h-3.5 rounded-full bg-black/90 border border-neutral-700 flex items-center justify-center pointer-events-none">
+                        <div className="w-1.5 h-1.5 rounded-full bg-[#1A1A24]" />
+                      </div>
+
+                      {/* Live App Frame */}
+                      <iframe
+                        src="/"
+                        className="w-full h-full border-0 bg-[#FAF7F2]"
+                        title="Vessli Android APK Live Preview"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-[#8A767A] text-center mt-3">
+                    💡 <strong>Pro Tip:</strong> You can also press <kbd className="px-1.5 py-0.5 bg-neutral-200 text-neutral-800 rounded font-mono text-[10px]">F12</kbd> (or Right Click → <strong>Inspect</strong>) and click the <strong>Mobile Toggle</strong> icon (<span className="text-[#4A0E17]">📱</span>) in your browser to test any device size!
+                  </p>
+                </div>
+              </div>
+            )}
+
             {activeTab === 'install' && (
               <div className="space-y-4">
                 <div className="p-5 rounded-2xl bg-[#FAF6EE]/70 border border-[#E2D5BE] space-y-3">
