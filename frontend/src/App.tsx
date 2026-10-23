@@ -13,6 +13,9 @@ import Auth from './pages/Auth'
 import Account from './pages/Account'
 import Seller from './pages/Seller'
 import ProductDetail from './pages/ProductDetail'
+import { PWAInstallButton } from './components/PWAInstallButton'
+import { APKMobileShell } from './components/APKMobileShell'
+import { APKInstallModal } from './components/APKInstallModal'
 
 function Nav() {
   const { session } = useAuth()
@@ -73,8 +76,10 @@ function Nav() {
           )}
         </nav>
 
-        {/* Zone 3: Primary Action & Profile Dropdown */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Zone 3: Primary Action, APK Install & Profile Dropdown */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <PWAInstallButton />
+
           <button
             onClick={openChat}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4A0E17]/10 hover:bg-[#4A0E17]/20 border border-[#4A0E17]/30 text-[#4A0E17] text-xs font-bold transition cursor-pointer"
@@ -236,6 +241,7 @@ function Home() {
   const [priceRange, setPriceRange] = useState<'all' | 'under5k' | '5k_to_10k' | 'above10k'>('all')
   const [showSavedOnly, setShowSavedOnly] = useState(false)
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null)
+  const [apkModalOpen, setApkModalOpen] = useState(false)
 
   const [live, setLive] = useState<Product[]>([])
   const { buy, busy, error, setError } = useBuy()
@@ -417,6 +423,35 @@ function Home() {
           </NoticeBanner>
         </div>
       )}
+
+      {/* Mobile APK Showcase Strip */}
+      <section className="mb-6 p-4 sm:p-5 bg-gradient-to-r from-[#4A0E17] via-[#5A121E] to-[#36080E] text-white rounded-3xl border border-[#D4AF37]/50 shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5 w-full md:w-auto">
+          <div className="w-12 h-12 rounded-2xl bg-white text-[#4A0E17] flex items-center justify-center font-black text-2xl shadow-md border-2 border-[#D4AF37] shrink-0">
+            V
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-extrabold text-sm sm:text-base text-white">Vessli Mobile APK Experience</span>
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#D4AF37] text-[#4A0E17] uppercase tracking-wider">
+                Android Ready
+              </span>
+            </div>
+            <p className="text-xs text-[#E2D5BE] mt-0.5 leading-snug">
+              Install 1-tap Android WebAPK or native bundle. Access touch ergonomics, offline browsing & bottom navigation dock.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+          <button
+            onClick={() => setApkModalOpen(true)}
+            className="w-full md:w-auto px-4 py-2.5 bg-[#D4AF37] hover:bg-[#c29c2b] text-[#4A0E17] font-extrabold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>📱</span>
+            <span>Install / Export APK</span>
+          </button>
+        </div>
+      </section>
 
       {/* Visual Category Cards */}
       <section id="categories" className="py-8">
@@ -705,6 +740,9 @@ function Home() {
           busy={busy}
         />
       )}
+
+      {/* APK Installation Modal */}
+      <APKInstallModal isOpen={apkModalOpen} onClose={() => setApkModalOpen(false)} />
     </div>
   )
 }
@@ -734,66 +772,75 @@ function Shell() {
   const navigate = useNavigate()
   const { isChatOpen, openChat, closeChat } = useAI()
   const bare = loc.pathname === '/login'
+
   if (bare) {
     return (
-      <Routes>
-        <Route path="/login" element={<Auth />} />
-      </Routes>
+      <APKMobileShell>
+        <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+          <Nav />
+          <Routes>
+            <Route path="/login" element={<Auth />} />
+          </Routes>
+        </div>
+      </APKMobileShell>
     )
   }
+
   return (
-    <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
-      <Nav />
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<ProductDetail />} />
-          <Route path="/account" element={<Account />} />
-          <Route path="/seller" element={<Seller />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/login" element={<Auth />} />
-        </Routes>
-      </main>
+    <APKMobileShell>
+      <div className="min-h-screen bg-[#FAF7F2] flex flex-col">
+        <Nav />
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/seller" element={<Seller />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/login" element={<Auth />} />
+          </Routes>
+        </main>
 
-      {/* Floating AI Copilot Launcher */}
-      <button
-        onClick={openChat}
-        className="fixed bottom-6 right-6 z-40 bg-[#4A0E17] hover:bg-[#380b12] text-[#FAF7F2] border-2 border-[#D4AF37] px-4 py-3 shadow-2xl flex items-center gap-2.5 transition transform hover:-translate-y-0.5 cursor-pointer font-bold text-xs uppercase tracking-wider"
-        aria-label="Open AI Shopping Concierge"
-      >
-        <span className="w-2.5 h-2.5 bg-[#D4AF37] inline-block animate-pulse"></span>
-        <span>Ask Vessli Copilot</span>
-      </button>
+        {/* Floating AI Copilot Launcher (Visible on desktop; mobile uses bottom dock action) */}
+        <button
+          onClick={openChat}
+          className="hidden md:flex fixed bottom-6 right-6 z-40 bg-[#4A0E17] hover:bg-[#380b12] text-[#FAF7F2] border-2 border-[#D4AF37] px-4 py-3 shadow-2xl items-center gap-2.5 transition transform hover:-translate-y-0.5 cursor-pointer font-bold text-xs uppercase tracking-wider"
+          aria-label="Open AI Shopping Concierge"
+        >
+          <span className="w-2.5 h-2.5 bg-[#D4AF37] inline-block animate-pulse"></span>
+          <span>Ask Vessli Copilot</span>
+        </button>
 
-      {/* Global AI Chat Modal */}
-      <AIChatModal
-        isOpen={isChatOpen}
-        onClose={closeChat}
-        catalog={FALLBACK_PRODUCTS}
-        onSelectProduct={(p) => {
-          navigate('/product/' + p.id)
-        }}
-      />
+        {/* Global AI Chat Modal */}
+        <AIChatModal
+          isOpen={isChatOpen}
+          onClose={closeChat}
+          catalog={FALLBACK_PRODUCTS}
+          onSelectProduct={(p) => {
+            navigate('/product/' + p.id)
+          }}
+        />
 
-      <footer className="text-center text-sm text-[#8A767A] py-10 border-t border-[#E2D5BE]/60 mt-16 bg-[#FAF6EE]">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 font-bold text-[#1C1618]">
-            <span className="w-6 h-6 rounded-md bg-[#4A0E17] text-white flex items-center justify-center text-xs font-black">
-              V
-            </span>
-            Vessli Marketplace
+        <footer className="text-center text-sm text-[#8A767A] py-10 border-t border-[#E2D5BE]/60 mt-16 bg-[#FAF6EE] pb-24 md:pb-10">
+          <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 font-bold text-[#1C1618]">
+              <span className="w-6 h-6 rounded-md bg-[#4A0E17] text-white flex items-center justify-center text-xs font-black">
+                V
+              </span>
+              Vessli Marketplace
+            </div>
+            <p className="text-xs">
+              Vessli <span className="text-[#D4AF37]">©</span> 2026 —{' '}
+              <span className="text-[#4A0E17] font-semibold">10% commission</span>, verified Paystack checkout & instant secure delivery.
+            </p>
+            <div className="flex gap-4 text-xs font-semibold text-[#5C4A4E]">
+              <Link to="/" className="hover:text-[#4A0E17]">Discover</Link>
+              <Link to="/account" className="hover:text-[#4A0E17]">Buyer Hub</Link>
+            </div>
           </div>
-          <p className="text-xs">
-            Vessli <span className="text-[#D4AF37]">©</span> 2026 —{' '}
-            <span className="text-[#4A0E17] font-semibold">10% commission</span>, verified Paystack checkout & instant secure delivery.
-          </p>
-          <div className="flex gap-4 text-xs font-semibold text-[#5C4A4E]">
-            <Link to="/" className="hover:text-[#4A0E17]">Discover</Link>
-            <Link to="/account" className="hover:text-[#4A0E17]">Buyer Hub</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </APKMobileShell>
   )
 }
 

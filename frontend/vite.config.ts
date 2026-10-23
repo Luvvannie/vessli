@@ -224,15 +224,46 @@ export default defineConfig({
 
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png'],
       manifest: {
-        name: 'Vessli',
+        id: '/',
+        name: 'Vessli - Digital Creator Marketplace',
         short_name: 'Vessli',
-        description: 'Marketplace for digital products',
-        theme_color: '#FAF8F5',
-        background_color: '#FAF8F5',
+        description: 'Marketplace for digital products, templates, ebooks, and creative assets.',
+        theme_color: '#4A0E17',
+        background_color: '#FAF6EE',
         display: 'standalone',
+        orientation: 'portrait-primary',
         start_url: '/',
-        icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+        scope: '/',
+        categories: ['business', 'shopping', 'productivity'],
+        icons: [
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/pwa-maskable-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+      },
+      devOptions: {
+        enabled: true,
+        type: 'module',
       },
     }),
   ],
