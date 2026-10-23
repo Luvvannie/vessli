@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { signUpUser, loginUser, resetUserPassword, deleteUserAccount } from '../lib/authService'
 
 export default function Auth() {
@@ -151,22 +151,6 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-[#FAF6EE] text-[#1C1618]">
-      {/* Top Header Bar */}
-      <nav className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between border-b border-[#E2D5BE]/60">
-        <Link to="/" className="flex items-center gap-2 font-black text-2xl text-[#4A0E17]">
-          <span className="w-9 h-9 rounded-xl bg-[#4A0E17] text-[#FAF6EE] flex items-center justify-center font-black text-sm shadow-xs">
-            V
-          </span>
-          Vessli<span className="text-[#D4AF37]">.</span>
-        </Link>
-        <Link
-          to="/"
-          className="text-xs font-bold text-[#5C4A4E] hover:text-[#4A0E17] transition border border-[#E2D5BE] bg-white px-3.5 py-1.5 rounded-full"
-        >
-          ← Back to Catalog
-        </Link>
-      </nav>
-
       <div className="max-w-6xl mx-auto px-6 py-12 grid lg:grid-cols-12 gap-10 items-start">
         {/* Left Side: Editorial & Trust Value Proposition */}
         <div className="lg:col-span-5 space-y-6 pt-4">

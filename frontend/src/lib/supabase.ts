@@ -13,4 +13,11 @@ const isInvalidKey = !envKey || envKey.includes('placeholder') || envKey.include
 export const supabaseUrl = isInvalidUrl ? DEFAULT_URL : envUrl
 export const supabaseKey = isInvalidKey ? DEFAULT_KEY : envKey
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+  },
+})

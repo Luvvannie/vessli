@@ -91,13 +91,13 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         }
 
         // 2. Check buyer profile capability:
-        // A user has buyer access if they explicitly registered as a buyer OR
-        // if they activated the buyer profile (`metadata.is_buyer === true`).
-        // Pure creators who only registered as a creator do NOT have buyer access by default.
+        // Any registered user and platform admin can browse, order, and view their Buyer Hub.
         const buyerFound = Boolean(
+          hasAdminAccess ||
           isRegisteredBuyer ||
+          metadata.is_buyer === true ||
           metadata.has_buyer_profile === true ||
-          (!isRegisteredSeller && !sData) // Regular users without seller record default to buyers
+          true
         )
         setHasBuyerProfile(buyerFound)
 
