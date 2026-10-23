@@ -19,7 +19,7 @@ export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenSearch
   const isHome = path === '/'
   const isStudio = path === '/seller'
   const isAccount = path === '/account'
-  const isAuth = path === '/auth'
+  const isAuth = path === '/auth' || path === '/login'
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#FAF6EE]/95 backdrop-blur-xl border-t border-[#E2D5BE] shadow-[0_-4px_20px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom,8px)] transition-all">
@@ -106,7 +106,7 @@ export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenSearch
           </Link>
         ) : (
           <Link
-            to={session ? '/account' : '/auth'}
+            to={session ? '/account' : '/login'}
             className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-all cursor-pointer group ${
               isAccount ? 'text-[#4A0E17]' : 'text-[#8A767A] hover:text-[#4A0E17]'
             }`}
@@ -126,9 +126,9 @@ export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenSearch
           </Link>
         )}
 
-        {/* 5. Account & APK Hub */}
+        {/* 5. Account / Sign In */}
         <Link
-          to={session ? '/account' : '/auth'}
+          to={session ? '/account' : '/login'}
           className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-all cursor-pointer group ${
             isAccount || isAuth ? 'text-[#4A0E17]' : 'text-[#8A767A] hover:text-[#4A0E17]'
           }`}

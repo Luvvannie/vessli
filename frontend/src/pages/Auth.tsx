@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { signUpUser, loginUser, resetUserPassword, deleteUserAccount } from '../lib/authService'
 
 export default function Auth() {
   const navigate = useNavigate()
@@ -33,24 +33,6 @@ export default function Auth() {
     }
   }, [searchParams])
 
-  async function handleDirectReset(targetEmail: string, targetPass: string) {
-    const res = await fetch('/api/auth/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: targetEmail,
-        password: targetPass,
-        role: portal === 'creator' ? 'seller' : 'buyer',
-        fullName: fullName.trim() || targetEmail.split('@')[0],
-      }),
-    })
-    const data = await res.json().catch(() => null)
-    if (!res.ok) {
-      throw new Error(data?.error || `Reset endpoint unavailable (${res.status})`)
-    }
-    return data
-  }
-
   async function handleDeleteAccount() {
     const trimmedEmail = email.trim().toLowerCase()
     if (!trimmedEmail) {
@@ -62,20 +44,14 @@ export default function Auth() {
     setMsgType('info')
     setMsg('Removing account from Supabase...')
     try {
-      const res = await fetch('/api/auth/delete-user', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmedEmail }),
-      })
-      const data = await res.json().catch(() => null)
-      if (!res.ok) throw new Error(data?.error || 'Account deletion endpoint requires backend server or Supabase Dashboard access.')
+      const data = await deleteUserAccount(trimmedEmail)
       setMsgType('success')
       setMsg(`${data?.message || 'Account deleted'}. You can now sign up fresh!`)
       setShowDeleteConfirm(false)
       setMode('signup')
-    } catch (err: any) {
+    } catch (err: unknown) {
       setMsgType('error')
-      setMsg(err.message || 'Failed to delete account.')
+      setMsg(err instanceof Error ? err.message : 'Failed to delete account.')
     } finally {
       setBusy(false)
     }
@@ -91,108 +67,50 @@ export default function Auth() {
 
     try {
       if (mode === 'reset') {
-        // Direct password reset without email sending requirement
         setMsg('Updating password in Supabase...')
-        await handleDirectReset(trimmedEmail, password)
-
-        // Log in immediately with the new password
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
-          password,
-        })
-        if (loginError) throw loginError
+        await resetUserPassword(trimmedEmail, password, portal === 'creator' ? 'seller' : 'buyer', fullName)
 
         setMsgType('success')
         setMsg('Password updated! Signing you in...')
         setTimeout(() => {
           navigate(portal === 'creator' ? '/seller' : '/')
-        }, 600)
+        }, 500)
         return
       }
 
       if (mode === 'signup') {
-        // Sign up with explicit role partitioning
         const isCreator = portal === 'creator'
-
-        const metadata: Record<string, unknown> = {
-          full_name: fullName.trim() || trimmedEmail.split('@')[0],
-          role: isCreator ? 'seller' : 'buyer',
-          is_buyer: !isCreator,
-          is_seller: isCreator,
+        if (isCreator && !storeName.trim()) {
+          throw new Error('Please enter your creator store or brand name.')
         }
 
-        if (isCreator) {
-          if (!storeName.trim()) {
-            throw new Error('Please enter your creator store or brand name.')
-          }
-          metadata.store_name = storeName.trim()
-          metadata.bio = storeBio.trim() || 'Digital templates & guides'
-        }
-
-        // Try direct backend signup/reset so password is ALWAYS updated and email is verified
-        try {
-          await handleDirectReset(trimmedEmail, password)
-        } catch {
-          // Fallback to client signup
-          await supabase.auth.signUp({
-            email: trimmedEmail,
-            password,
-            options: { data: metadata },
-          })
-        }
-
-        // Attempt immediate login
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+        setMsg('Creating your account in Supabase...')
+        await signUpUser({
           email: trimmedEmail,
           password,
+          fullName,
+          role: isCreator ? 'seller' : 'buyer',
+          storeName,
+          bio: storeBio,
         })
 
-        if (!loginError && loginData?.session) {
-          if (isCreator) {
-            try {
-              await supabase.from('seller_profiles').upsert({
-                user_id: loginData.user.id,
-                store_name: storeName.trim(),
-                bio: storeBio.trim() || null,
-              })
-            } catch {
-              // Handled
-            }
-          }
-
-          setMsgType('success')
-          setMsg(
-            isCreator
-              ? 'Creator account created! Launching your Creator Studio...'
-              : 'Buyer account created! Welcome to Vessli...'
-          )
-          setTimeout(() => {
-            navigate(isCreator ? '/seller' : '/')
-          }, 600)
-          return
-        }
-
-        // Fallback notification
         setMsgType('success')
-        setMsg('Account ready! You can now log in.')
-        setMode('login')
+        setMsg(
+          isCreator
+            ? 'Creator account created! Launching your Creator Studio...'
+            : 'Buyer account created! Welcome to Vessli...'
+        )
+        setTimeout(() => {
+          navigate(isCreator ? '/seller' : '/')
+        }, 500)
+        return
       } else {
         // Login Flow
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
-          password,
-        })
+        setMsg('Verifying credentials...')
+        const loginData = await loginUser(trimmedEmail, password)
 
-        if (error) {
-          throw new Error(
-            error.message === 'Invalid login credentials'
-              ? 'Incorrect email or password.'
-              : error.message
-          )
-        }
-
-        const user = data.user
-        const meta = user.user_metadata || {}
+        const user = loginData.user
+        const meta = user?.user_metadata || {}
 
         // Check if Annabel (admin) is logging in
         const isAdmin =
@@ -201,41 +119,27 @@ export default function Auth() {
           meta.role === 'admin' ||
           meta.is_admin === true
 
-        // Role verification and routing
-        if (portal === 'creator') {
-          // Verify if user is eligible for creator portal
-          const isSeller =
-            isAdmin ||
-            meta.role === 'seller' ||
-            meta.is_seller === true
+        // Route smoothly based on role and portal preference
+        const isSeller =
+          isAdmin ||
+          meta.role === 'seller' ||
+          meta.is_seller === true ||
+          portal === 'creator'
 
-          if (!isSeller) {
-            // Check in seller_profiles table
-            const { data: sProfile } = await supabase
-              .from('seller_profiles')
-              .select('id')
-              .eq('user_id', user.id)
-              .maybeSingle()
+        setMsgType('success')
+        setMsg(
+          isSeller && portal === 'creator'
+            ? 'Welcome to Creator Studio! Redirecting...'
+            : 'Welcome back to Vessli! Redirecting...'
+        )
 
-            if (!sProfile && !isAdmin) {
-              setMsgType('info')
-              setMsg(
-                'Signed in! This account is currently registered as a Buyer. Redirecting to store...'
-              )
-              setTimeout(() => navigate('/'), 800)
-              return
-            }
+        setTimeout(() => {
+          if (portal === 'creator' || (isAdmin && portal !== 'buyer')) {
+            navigate('/seller')
+          } else {
+            navigate('/')
           }
-
-          setMsgType('success')
-          setMsg('Welcome to Creator Studio! Redirecting...')
-          setTimeout(() => navigate('/seller'), 500)
-        } else {
-          // Buyer Portal Login
-          setMsgType('success')
-          setMsg('Welcome back to Vessli! Redirecting...')
-          setTimeout(() => navigate('/'), 500)
-        }
+        }, 500)
       }
     } catch (err: unknown) {
       setMsgType('error')

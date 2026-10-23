@@ -735,7 +735,7 @@ function Shell() {
   const loc = useLocation()
   const navigate = useNavigate()
   const { isChatOpen, openChat, closeChat } = useAI()
-  const bare = loc.pathname === '/login'
+  const bare = loc.pathname === '/login' || loc.pathname === '/auth'
 
   const searchParams = new URLSearchParams(loc.search)
   const isApkParam = searchParams.get('page') === 'apk' || searchParams.get('view') === 'apk' || searchParams.get('apk') === 'true'
@@ -758,6 +758,7 @@ function Shell() {
           <Nav />
           <Routes>
             <Route path="/login" element={<Auth />} />
+            <Route path="/auth" element={<Auth />} />
           </Routes>
         </div>
       </APKMobileShell>
@@ -776,6 +777,7 @@ function Shell() {
             <Route path="/seller" element={<Seller />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Auth />} />
+            <Route path="/auth" element={<Auth />} />
             <Route path="/apk" element={<APKDownloadPage />} />
             <Route path="/install-apk" element={<APKDownloadPage />} />
           </Routes>
