@@ -13,9 +13,8 @@ import Auth from './pages/Auth'
 import Account from './pages/Account'
 import Seller from './pages/Seller'
 import ProductDetail from './pages/ProductDetail'
-import { PWAInstallButton } from './components/PWAInstallButton'
+import APKDownloadPage from './pages/APKDownloadPage'
 import { APKMobileShell } from './components/APKMobileShell'
-import { APKInstallModal } from './components/APKInstallModal'
 
 function Nav() {
   const { session } = useAuth()
@@ -76,10 +75,8 @@ function Nav() {
           )}
         </nav>
 
-        {/* Zone 3: Primary Action, APK Install & Profile Dropdown */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <PWAInstallButton />
-
+        {/* Zone 3: Primary Action & Profile Dropdown */}
+        <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={openChat}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4A0E17]/10 hover:bg-[#4A0E17]/20 border border-[#4A0E17]/30 text-[#4A0E17] text-xs font-bold transition cursor-pointer"
@@ -241,7 +238,6 @@ function Home() {
   const [priceRange, setPriceRange] = useState<'all' | 'under5k' | '5k_to_10k' | 'above10k'>('all')
   const [showSavedOnly, setShowSavedOnly] = useState(false)
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null)
-  const [apkModalOpen, setApkModalOpen] = useState(false)
 
   const [live, setLive] = useState<Product[]>([])
   const { buy, busy, error, setError } = useBuy()
@@ -423,35 +419,6 @@ function Home() {
           </NoticeBanner>
         </div>
       )}
-
-      {/* Mobile APK Showcase Strip */}
-      <section className="mb-6 p-4 sm:p-5 bg-gradient-to-r from-[#4A0E17] via-[#5A121E] to-[#36080E] text-white rounded-3xl border border-[#D4AF37]/50 shadow-md flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 w-full md:w-auto">
-          <div className="w-12 h-12 rounded-2xl bg-white text-[#4A0E17] flex items-center justify-center font-black text-2xl shadow-md border-2 border-[#D4AF37] shrink-0">
-            V
-          </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-extrabold text-sm sm:text-base text-white">Vessli Mobile APK Experience</span>
-              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#D4AF37] text-[#4A0E17] uppercase tracking-wider">
-                Android Ready
-              </span>
-            </div>
-            <p className="text-xs text-[#E2D5BE] mt-0.5 leading-snug">
-              Install 1-tap Android WebAPK or native bundle. Access touch ergonomics, offline browsing & bottom navigation dock.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
-          <button
-            onClick={() => setApkModalOpen(true)}
-            className="w-full md:w-auto px-4 py-2.5 bg-[#D4AF37] hover:bg-[#c29c2b] text-[#4A0E17] font-extrabold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>📱</span>
-            <span>Install / Export APK</span>
-          </button>
-        </div>
-      </section>
 
       {/* Visual Category Cards */}
       <section id="categories" className="py-8">
@@ -740,9 +707,6 @@ function Home() {
           busy={busy}
         />
       )}
-
-      {/* APK Installation Modal */}
-      <APKInstallModal isOpen={apkModalOpen} onClose={() => setApkModalOpen(false)} />
     </div>
   )
 }
@@ -798,6 +762,8 @@ function Shell() {
             <Route path="/seller" element={<Seller />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/login" element={<Auth />} />
+            <Route path="/apk" element={<APKDownloadPage />} />
+            <Route path="/install-apk" element={<APKDownloadPage />} />
           </Routes>
         </main>
 

@@ -5,11 +5,10 @@ import { useRole } from '../lib/roles'
 import { useAI } from '../lib/aiContext'
 
 interface AndroidBottomNavProps {
-  onOpenAPKModal: () => void
   onOpenSearch?: () => void
 }
 
-export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenAPKModal, onOpenSearch }) => {
+export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenSearch }) => {
   const location = useLocation()
   const { session } = useAuth()
   const { currentRole } = useRole()
@@ -149,18 +148,8 @@ export const AndroidBottomNav: React.FC<AndroidBottomNavProps> = ({ onOpenAPKMod
         </Link>
       </div>
 
-      {/* Android Home Gesture Pill & Quick APK action */}
-      <div className="flex items-center justify-center gap-2 my-0.5">
-        <button
-          onClick={onOpenAPKModal}
-          className="text-[9px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAF2E8] hover:bg-[#F3E7D3] text-[#4A0E17] border border-[#D4AF37]/50 transition cursor-pointer flex items-center gap-1 shadow-2xs"
-          title="Open Android APK Installation & Export Menu"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>APK</span>
-        </button>
-        <div className="w-24 h-1 bg-[#4A0E17]/25 rounded-full pointer-events-none" />
-      </div>
+      {/* Android Home Gesture Pill */}
+      <div className="w-32 h-1 bg-[#4A0E17]/25 rounded-full mx-auto my-1 pointer-events-none" />
     </nav>
   )
 }

@@ -6,8 +6,6 @@ import { useRole } from '../lib/roles'
 import { Button, StatusBadge, NoticeBanner } from '../components/ui'
 import { requestDownloadLink, coverUrl } from '../lib/s3'
 import { FALLBACK_PRODUCTS } from '../lib/products'
-import { usePWAInstall } from '../lib/usePWAInstall'
-import { APKInstallModal } from '../components/APKInstallModal'
 
 type OrderItem = {
   id: string
@@ -29,10 +27,8 @@ type Order = {
 export default function Account() {
   const { session, loading } = useAuth()
   const { hasBuyerProfile, hasSellerProfile, sellerProfile, activateBuyerProfile } = useRole()
-  const { isInstallable, isInstalled, install } = usePWAInstall()
-  const [apkModalOpen, setApkModalOpen] = useState(false)
   const [activatingBuyer, setActivatingBuyer] = useState(false)
-  const [activeTab, setActiveTab] = useState<'orders' | 'profile' | 'apk'>('orders')
+  const [activeTab, setActiveTab] = useState<'orders' | 'profile'>('orders')
   const [orders, setOrders] = useState<Order[]>([])
   const [msg, setMsg] = useState<{ type: 'info' | 'success' | 'warning' | 'error'; text: string } | null>(null)
   const [downloadingId, setDownloadingId] = useState<string | null>(null)
@@ -370,20 +366,6 @@ export default function Account() {
         >
           Profile Settings
         </button>
-        <button
-          onClick={() => setActiveTab('apk')}
-          className={`px-5 py-3 text-sm font-bold border-b-2 transition flex items-center gap-1.5 ${
-            activeTab === 'apk'
-              ? 'border-wine text-wine'
-              : 'border-transparent text-[#8A767A] hover:text-[#2A1A1E]'
-          }`}
-        >
-          <span>📱</span>
-          <span>APK & Mobile App</span>
-          <span className="text-[10px] bg-[#D4AF37] text-[#4A0E17] font-extrabold px-1.5 py-0.5 rounded-full">
-            APK
-          </span>
-        </button>
       </div>
 
       {/* Active 5-minute Download Countdown Banner */}
@@ -565,60 +547,6 @@ export default function Account() {
           </div>
         </form>
       )}
-
-      {/* TAB 3: APK & Mobile App Hub */}
-      {activeTab === 'apk' && (
-        <div className="mt-6 space-y-6 max-w-2xl">
-          <div className="bg-white rounded-3xl border border-[#E2D5BE] p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E2D5BE]">
-              <div>
-                <h3 className="font-extrabold text-lg text-[#1C1618]">Android APK & Mobile Status</h3>
-                <p className="text-xs text-[#8A767A] mt-0.5">
-                  Package: <code className="font-mono text-[#4A0E17]">com.vessli.app</code> · Architecture: Android WebAPK / PWA
-                </p>
-              </div>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                isInstalled ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
-              }`}>
-                {isInstalled ? '✓ Installed' : 'Ready to Install'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-[#FAF6EE] rounded-xl border border-[#E2D5BE]">
-                <div className="text-[#8A767A] text-[11px]">Display Mode</div>
-                <div className="font-bold text-[#4A0E17] text-sm mt-0.5">Standalone Window (Zero Chrome)</div>
-              </div>
-              <div className="p-3 bg-[#FAF6EE] rounded-xl border border-[#E2D5BE]">
-                <div className="text-[#8A767A] text-[11px]">Offline Cache</div>
-                <div className="font-bold text-emerald-700 text-sm mt-0.5">Enabled (Service Worker)</div>
-              </div>
-              <div className="p-3 bg-[#FAF6EE] rounded-xl border border-[#E2D5BE]">
-                <div className="text-[#8A767A] text-[11px]">Theme Color</div>
-                <div className="font-bold text-[#4A0E17] text-sm mt-0.5">#4A0E17 (Luxury Maroon)</div>
-              </div>
-              <div className="p-3 bg-[#FAF6EE] rounded-xl border border-[#E2D5BE]">
-                <div className="text-[#8A767A] text-[11px]">Target Android SDK</div>
-                <div className="font-bold text-[#1C1618] text-sm mt-0.5">API 34 (Android 14+)</div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex flex-col sm:flex-row gap-3">
-              {isInstallable ? (
-                <Button variant="primary" onClick={install} className="flex-1 text-xs py-2.5">
-                  🚀 Install APK Directly (WebAPK)
-                </Button>
-              ) : null}
-              <Button variant="secondary" onClick={() => setApkModalOpen(true)} className="flex-1 text-xs py-2.5">
-                📦 Open APK Packaging & QR Hub
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* APK Hub Modal */}
-      <APKInstallModal isOpen={apkModalOpen} onClose={() => setApkModalOpen(false)} />
     </div>
   )
 }
